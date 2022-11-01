@@ -1,7 +1,7 @@
 {
-  "name": "",
+  "name": "firefox-api-proxy",
   "version": "1.0.0",
-  "description": "",
+  "description": "Firefox new tab and privileged extension stable API proxy (BFF)",
   "main": "dist/main.js",
   "scripts": {
     "build": "rm -rf dist && tsc",
@@ -16,16 +16,19 @@
     "lint-fix": "eslint --fix \"src/**/*.ts\"",
     "prepare": "husky install"
   },
+  "engines": {
+    "node": "=18"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Pocket/.git"
+    "url": "git+https://github.com/Pocket/firefox-api-proxy.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Pocket//issues"
+    "url": "https://github.com/Pocket/firefox-api-proxy/issues"
   },
-  "homepage": "https://github.com/Pocket/#readme",
+  "homepage": "https://github.com/Pocket/firefox-api-proxy#readme",
   "dependencies": {
     "@apollo/subgraph": "2.0.5",
     "@pocket-tools/apollo-utils": "^2.2.0",
