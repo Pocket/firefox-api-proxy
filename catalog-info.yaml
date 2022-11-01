@@ -1,0 +1,30 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: 
+  description: "Firefox Back End For Front End (BFF) Proxy Stable API"
+  annotations:
+    github.com/project-slug: pocket/
+    github.com/team-slug: "backend"
+    circleci.com/project-slug: github/pocket/
+    sentry.io/project-slug: "firefoxapiproxy"
+spec:
+  type: service
+  owner: backend
+  lifecycle: production
+  providesApis:
+    - 
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: 
+  description: "Firefox Back End For Front End (BFF) Proxy Stable API"
+spec:
+  type: graphql
+  owner: backend
+  definition: |
+    query {}
+  lifecycle: production
