@@ -3,7 +3,7 @@ export default {
   app: {
     environment: process.env.NODE_ENV || 'development',
     defaultMaxAge: 86400,
-    port: 4242,
+    port: 4028,
   },
   sentry: {
     dsn: process.env.SENTRY_DSN || '',

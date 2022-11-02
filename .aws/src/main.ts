@@ -143,8 +143,8 @@ class Stack extends TerraformStack {
           name: 'app',
           portMappings: [
             {
-              hostPort: 4005,
-              containerPort: 4005,
+              hostPort: 4028,
+              containerPort: 4028,
             },
           ],
           healthCheck: config.healthCheck,
@@ -190,7 +190,7 @@ class Stack extends TerraformStack {
       },
       exposedContainer: {
         name: 'app',
-        port: 4001,
+        port: 4028,
         healthCheckPath: '/.well-known/apollo/server-health',
       },
       ecsIamConfig: {

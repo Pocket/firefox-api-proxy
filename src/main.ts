@@ -42,7 +42,7 @@ app.get('/.well-known/server-health', (req, res) => {
 //Make sure the express app has the xray close segment handler
 app.use(xrayExpress.closeSegment());
 
-app.listen({ port: 4001 }, () =>
+app.listen({ port: config.app.port }, () =>
   console.log(
     `🚀 Firefox API Proxy ready at http://localhost:${config.app.port}`
   )
