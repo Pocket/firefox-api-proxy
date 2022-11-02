@@ -25,7 +25,6 @@ Sentry.init({
   debug: config.sentry.environment == 'development',
 });
 
-
 const app = express();
 
 //If there is no host header (really there always should be..) then use parser-wrapper as the name
@@ -44,5 +43,7 @@ app.get('/.well-known/server-health', (req, res) => {
 app.use(xrayExpress.closeSegment());
 
 app.listen({ port: 4001 }, () =>
-  console.log(`🚀 Firefox API Proxy ready at http://localhost:${config.app.port}`)
+  console.log(
+    `🚀 Firefox API Proxy ready at http://localhost:${config.app.port}`
+  )
 );
