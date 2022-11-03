@@ -191,7 +191,7 @@ class Stack extends TerraformStack {
       exposedContainer: {
         name: 'app',
         port: 4028,
-        healthCheckPath: '/.well-known/apollo/server-health',
+        healthCheckPath: '/.well-known/server-health',
       },
       ecsIamConfig: {
         prefix: config.prefix,
