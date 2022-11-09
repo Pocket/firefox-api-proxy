@@ -5,6 +5,8 @@ npm test
 #can add integration test and other commands based on the need
 echo "running lint-fix in: $(pwd)"
 npm run lint-fix
+echo "running lint-openapi in: $(pwd)"
+npm run lint-openapi
 cd .aws
 echo "running lint-fix in: $(pwd)"
 npm run lint-fix

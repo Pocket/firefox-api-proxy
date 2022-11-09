@@ -1,4 +1,4 @@
-FROM node:16-slim@sha256:e5936cf8dbbb3c0d9d337c0e9f23e56e00b7e62280a8a617d12adfdda8ca9f11
+FROM node:18-slim@sha256:0a621cdd7d66ad8976f4246ab0661e3b1dd0d397c1dd784ea01bf740bd1c2522
 
 WORKDIR /usr/src/app
 
@@ -7,7 +7,7 @@ ARG GIT_SHA
 COPY . .
 
 ENV NODE_ENV=production
-ENV PORT 4242
+ENV PORT 4028
 ENV GIT_SHA=${GIT_SHA}
 
 EXPOSE ${PORT}
