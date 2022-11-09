@@ -34,9 +34,15 @@ components:
     SavedItem:
       type: object
       required:
+        - __typename
         - id
         - givenUrl
       properties:
+        __typename:
+          type: string
+          description: Constant identifier for SavedItems, allowing them to be differentiated when multiple types are returned together.
+          enum:
+            - SavedItem
         id:
           type: string
           description: The Saved Item ID.
@@ -56,7 +62,7 @@ components:
           type: string
           description: The Domain of the saved item
         wordCount:
-          type: string
+          type: number
           description: Numeric string, word count of the item. May be 0 if parsing fails
         timeToRead:
           type: number
@@ -69,7 +75,13 @@ components:
       required:
         - id
         - givenUrl
+        - __typename
       properties:
+        __typename:
+          type: string
+          description: Constant identifier for PendingSavedItems, allowing them to be differentiated when multiple types are returned together.
+          enum:
+            - PendingSavedItem
         id:
           type: string
           description: The Saved Item ID.
