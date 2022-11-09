@@ -2,12 +2,15 @@ openapi: '3.0.3'
 info:
   title: Firefox API Proxy
   version: '0.1'
+  license:
+    name: ISC
+    url: https://opensource.org/licenses/ISC
 servers:
-  - url: https://firefox-api-proxy.getpocket.com/
+  - url: https://firefox-api-proxy.getpocket.com
     description: Production environment
-  - url: https://firefox-api-proxy.getpocket.dev/
+  - url: https://firefox-api-proxy.getpocket.dev
     description: Development environment
-  - url: http://localhost:4028/
+  - url: http://localhost:4028
     description: Local default port
 
 #common components referenced across multiple paths
@@ -23,129 +26,102 @@ components:
         # Do not exceed maxPageSize https://github.com/Pocket/list-api/blob/main/src/config/index.ts#L107
         # starting small, always easy to increase max but difficult to shrink
         maximum: 20
-        default: 4
+        default: 10
       description: The number of items to return.
-    languageParam:
-      in: query
-      name: locale_lang
-      required: false
-      schema:
-        type: string
-        enum:
-          - en-US
-          - de-DE
-      description: The language of content to return.
 
   # Common schema definitions
   schemas:
     SavedItem:
       type: object
       required:
-        # TODO: enumerate all required properties here
-        - item_id
+        - id
+        - givenUrl
       properties:
-        # TODO: add more descriptions and validations
-        item_id:
+        id:
           type: string
           description: The Saved Item ID.
-        resolved_id:
+        resolvedUrl:
           type: string
-        given_url:
+          description: Resolved URL for a saved item. This includes following any redirects and any parser normalization.
+        givenUrl:
           type: string
-        given_title:
+          description: The URL the user saved to their list.
+        title:
           type: string
-        favorite:
-          type: string
-          enum: ['0', '1']
-        status:
-          type: string
-          enum: ['0', '1']
-        time_added:
-          type: string
-          description: Unix timestamp string (seconds)
-        time_updated:
-          type: string
-          description: Unix timestamp string (seconds)
-        time_read:
-          type: string
-          description: Unix timestamp? 0 if not read
-        time_favorited:
-          type: string
-          description: Unix timestamp? 0 if not favorited
-        open_url:
-          type: string
-        sort_id:
-          type: number
-        resolved_title:
-          type: string
-        resolved_url:
-          type: string
+          description: The title of the saved item as resolved by the parser.
         excerpt:
           type: string
-        is_article:
+          description: An excerpt from the saved item as resolved by the parser.
+        domain:
           type: string
-          enum: ['0', '1']
-        is_index:
-          type: string
-          enum: ['0', '1']
-        has_video:
-          type: string
-          enum: ['0', '1']
-        has_image:
-          type: string
-          enum: ['0', '1']
-        word_count:
+          description: The Domain of the saved item
+        wordCount:
           type: string
           description: Numeric string, word count of the item. May be 0 if parsing fails
-        lang:
-          type: string
-          enum: ['en', 'de']
-        time_to_read:
+        timeToRead:
           type: number
           description: Approximate minutes to read the item, based on word_count
-        top_image_url:
+        topImageUrl:
           type: string
-        domain_metadata:
-          type: object
-          properties:
-            name:
-              type: string
-            logo:
-              type: string
-            greyscale_logo:
-              type: string
-        listen_duration_estimate:
-          type: number
-          description: Approximate seconds to listen to the item, based on word_count
+          description: Primary image from the saved item as resolved by the parser.
+    PendingSavedItem:
+      type: object
+      required:
+        - id
+        - givenUrl
+      properties:
+        id:
+          type: string
+          description: The Saved Item ID.
+        givenUrl:
+          type: string
+          description: The URL the user saved to their list.
+
 
 
   # securitySchemes roughly map to authentication middleware
   securitySchemes:
-    SessionGuidAuth:
+    # The following schemes prefixed with "WS" all constitute a `WebSession` auth.
+    # These are all required together for requests that require this auth type.
+    WSSessionGuidAuth:
       type: apiKey
       in: cookie
       name: sess_guid
-      description: "A portion of `WebSession` legacy auth. Must be paired with ConsumerKeyAuth"
+      description: A portion of `WebSession` legacy auth.
+    WSUserAuth:
+      type: apiKey
+      in: cookie
+      name: a95b4b6
+      description: A portion of `WebSession` legacy auth. A hash of the user's ID.
+    WSSessionAuth:
+      type: apiKey
+      in: cookie
+      name: d4a79ec
+      description: A portion of `WebSession` legacy auth. A hash of the session.
+    WSLookupAuth:
+      type: apiKey
+      in: cookie
+      name: 159e76e
+      description: A portion of `WebSession` legacy auth.
     # this is usually transmitted via query params in web V3, tentatively move to headers
-    ConsumerKeyAuth:
+    WSConsumerKeyAuth:
       type: apiKey
       in: header
       name: consumer_key
-      description: "A portion of `WebSession` legacy auth. Must be paired with SessionGuidAuth"
+      description: A portion of `WebSession` legacy auth.
 
 paths:
-  /.well-known/server-health:
-    get:
-      responses:
-        '200':
-          description: Health check OK
-  /firefox/v1/recent-saves:
+  /desktop/v1/recent-saves:
     get:
       summary: Gets a list of the most recent saves for a specific user
+      operationId: getRecentSaves
       security:
-      # require both SessionGuidAuth and ConsumerKeyAuth in pair, do not add '-'
-        - SessionGuidAuth: []
-          ConsumerKeyAuth: []
+        # require all WS (WebSession) security schemes together
+        - WSSessionGuidAuth: []
+          WSUserAuth: []
+          WSSessionAuth: []
+          WSLookupAuth: []
+          WSConsumerKeyAuth: []
       parameters:
         - $ref: "#/components/parameters/countParam"
       responses:
@@ -155,28 +131,20 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - savedItems
                 properties:
-                  status:
-                    type: number
-                  complete:
-                    type: number
-                  cachetype:
-                    type: string
-                  maxActions:
-                    type: number
-                  since:
-                    type: number
-                  search_meta:
-                    type: object
-                    properties:
-                      search_type:
-                        type: string
-                  error:
-                    type: object
-                    additionalProperties: true
-                  list:
-                    type: object
-                    additionalProperties:
-                      type: array
-                      items: 
-                        $ref: "#/components/schemas/SavedItem"
+                  savedItems:
+                    type: array
+                    items: 
+                      oneOf:
+                        - $ref: "#/components/schemas/SavedItem"
+                        - $ref: "#/components/schemas/PendingSavedItem"
+        '401':
+          description: Authorization is missing or invalid.
+        '500':
+          description: This proxy service encountered an unexpected error.
+        '502':
+          description: Services downstream from this proxy encountered an unexpected error. Invalid (expired) auth returns a 500 error in downstream services, so unfortunately this is also currently a 502 response as it cannot be differentiated.
+        '504':
+          description: Requests to downstream services timed out.
