@@ -45,40 +45,9 @@ only_dev: &only_dev
         - dev
 
 jobs:
-  apollo:
-    docker:
-      - image: circleci/node:16@sha256:1803e9ed7deec9456ad2609124b7333d40b2eec0cf34998ae766cbf90c9a3625
-    steps:
-      - checkout
-      - run:
-          name: install rover
-          command: |
-            # download and install Rover
-            curl -sSL https://rover.apollo.dev/nix/latest | sh
-
-            # This allows the PATH changes to persist to the next `run` step
-            echo 'export PATH=$HOME/.rover/bin:$PATH' >> $BASH_ENV
-      - run:
-          name: check service
-          command: rover subgraph check pocket-client-api@current --schema ./schema.graphql --name=
-      - when:
-          condition:
-            equal: [main, << pipeline.git.branch >>]
-          steps:
-            - run:
-                name: push service to prod
-                command: rover subgraph publish pocket-client-api@current --schema ./schema.graphql --routing-url https://firefox-api-proxy.readitlater.com/ --name=
-      - when:
-          condition:
-            equal: [dev, << pipeline.git.branch >>]
-          steps:
-            - run:
-                name: push service to dev
-                command: rover subgraph publish pocket-client-api@development --schema ./schema.graphql --routing-url https://firefox-api-proxy.getpocket.dev/ --name=
-
   build:
     docker:
-      - image: circleci/node:16@sha256:1803e9ed7deec9456ad2609124b7333d40b2eec0cf34998ae766cbf90c9a3625
+      - image: cimg/node:18@sha256:45826c38fb365c2848f3f595443b3086b1df4256d659b380bb9b666141eceadd
     steps:
       - checkout
       # Define the working directory for this job
@@ -100,7 +69,7 @@ jobs:
           paths:
             - ./node_modules
       - run:
-          name:
+          name: build
           command: |
             export NODE_ENV=production
             npm run build
@@ -120,7 +89,7 @@ jobs:
     description: Run integration tests against external services, e.g. Snowplow
     docker:
       # The application
-      - image: circleci/node:16@sha256:1803e9ed7deec9456ad2609124b7333d40b2eec0cf34998ae766cbf90c9a3625
+      - image: cimg/node:18@sha256:45826c38fb365c2848f3f595443b3086b1df4256d659b380bb9b666141eceadd
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
@@ -163,7 +132,7 @@ jobs:
   test_specs:
     description: Run spec tests
     docker:
-      - image: circleci/node:16@sha256:1803e9ed7deec9456ad2609124b7333d40b2eec0cf34998ae766cbf90c9a3625
+      - image: cimg/node:18@sha256:45826c38fb365c2848f3f595443b3086b1df4256d659b380bb9b666141eceadd
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
@@ -204,8 +173,6 @@ workflows:
           <<: *not_main
           context: pocket
           name: test_integrations
-
-      - apollo
 
       - build:
           context: pocket
