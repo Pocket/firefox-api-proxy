@@ -117,7 +117,7 @@ jobs:
       - run:
           name: run setup.sh
           command: |
-            export $(egrep -v '^#' .docker/local.env | xargs -0) && sudo ./.circleci/scripts/setup.sh --hosts --db
+            export $(egrep -v '^#' .docker/local.env | xargs -0) && ./.circleci/scripts/setup.sh --hosts --db
       - run:
           name: run tests
           command: |
