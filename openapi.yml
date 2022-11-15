@@ -31,7 +31,7 @@ components:
 
   # Common schema definitions
   schemas:
-    SavedItem:
+    Save:
       type: object
       required:
         - __typename
@@ -40,37 +40,44 @@ components:
       properties:
         __typename:
           type: string
-          description: Constant identifier for SavedItems, allowing them to be differentiated when multiple types are returned together.
+          description: Constant identifier for Saves, allowing them to be differentiated when multiple types are returned together.
           enum:
-            - SavedItem
+            - Save
         id:
           type: string
           description: The Saved Item ID.
         resolvedUrl:
           type: string
+          nullable: true
           description: Resolved URL for a saved item. This includes following any redirects and any parser normalization.
         givenUrl:
           type: string
           description: The URL the user saved to their list.
         title:
           type: string
+          nullable: true
           description: The title of the saved item as resolved by the parser.
         excerpt:
           type: string
+          nullable: true
           description: An excerpt from the saved item as resolved by the parser.
         domain:
           type: string
+          nullable: true
           description: The Domain of the saved item
         wordCount:
           type: number
+          nullable: true
           description: Numeric string, word count of the item. May be 0 if parsing fails
         timeToRead:
           type: number
+          nullable: true
           description: Approximate minutes to read the item, based on word_count
         topImageUrl:
           type: string
+          nullable: true
           description: Primary image from the saved item as resolved by the parser.
-    PendingSavedItem:
+    PendingSave:
       type: object
       required:
         - id
@@ -79,9 +86,9 @@ components:
       properties:
         __typename:
           type: string
-          description: Constant identifier for PendingSavedItems, allowing them to be differentiated when multiple types are returned together.
+          description: Constant identifier for PendingSave, allowing them to be differentiated when multiple types are returned together.
           enum:
-            - PendingSavedItem
+            - PendingSave
         id:
           type: string
           description: The Saved Item ID.
@@ -144,14 +151,14 @@ paths:
               schema:
                 type: object
                 required:
-                  - savedItems
+                  - saves
                 properties:
-                  savedItems:
+                  saves:
                     type: array
                     items: 
                       oneOf:
-                        - $ref: "#/components/schemas/SavedItem"
-                        - $ref: "#/components/schemas/PendingSavedItem"
+                        - $ref: "#/components/schemas/Save"
+                        - $ref: "#/components/schemas/PendingSave"
         '401':
           description: Authorization is missing or invalid.
         '500':
