@@ -132,7 +132,7 @@ class Stack extends TerraformStack {
     } = dependencies;
 
     return new PocketALBApplication(this, 'application', {
-      internal: true,
+      internal: false,
       prefix: config.prefix,
       alb6CharacterPrefix: config.shortName,
       tags: config.tags,
