@@ -25,7 +25,7 @@ export const config = {
   domain,
   codePipeline: {
     githubConnectionArn,
-    repository: 'pocket/',
+    repository: 'pocket/firefox-api-proxy',
     branch,
   },
   graphqlVariant,

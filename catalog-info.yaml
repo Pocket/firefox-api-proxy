@@ -1,30 +1,39 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: 
+  name: firefox-api-proxy
   description: "Firefox Back End For Front End (BFF) Proxy Stable API"
   annotations:
-    github.com/project-slug: pocket/
+    github.com/project-slug: pocket/firefox-api-proxy
     github.com/team-slug: "backend"
-    circleci.com/project-slug: github/pocket/
+    circleci.com/project-slug: github/pocket/firefox-api-proxy
     sentry.io/project-slug: "firefoxapiproxy"
+  links:
+    - url: https://firefox-api-proxy.getpocket.com/
+      title: Firefox API Proxy (Production)
+      icon: collections
+    - url: https://firefox-api-proxy.getpocket.dev/
+      title: Firefox API Proxy (Dev)
+      icon: collections
 spec:
   type: service
   owner: backend
   lifecycle: production
+  consumesApis:
+    - client-api
   providesApis:
-    - 
+    - firefox-api-proxy
 
 ---
 
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
-  name: 
+  name: firefox-dev-api
   description: "Firefox Back End For Front End (BFF) Proxy Stable API"
 spec:
-  type: graphql
+  type: rest
   owner: backend
   definition: |
-    query {}
+    https://github.com/Pocket/firefox-api-proxy/blob/main/openapi.yml
   lifecycle: production

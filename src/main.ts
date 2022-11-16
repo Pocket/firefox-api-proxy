@@ -1,9 +1,12 @@
 import * as Sentry from '@sentry/node';
-import config from './config';
 import AWSXRay from 'aws-xray-sdk-core';
 import xrayExpress from 'aws-xray-sdk-express';
 import express from 'express';
 import https from 'https';
+
+import config from './config';
+
+import API from './api';
 
 const serviceName = 'firefox-api-proxy';
 
@@ -38,6 +41,9 @@ app.use(express.json());
 app.get('/.well-known/server-health', (req, res) => {
   res.status(200).send('ok');
 });
+
+// register public API routes
+app.use('/', API);
 
 //Make sure the express app has the xray close segment handler
 app.use(xrayExpress.closeSegment());
