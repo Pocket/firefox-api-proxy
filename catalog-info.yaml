@@ -9,7 +9,7 @@ metadata:
     circleci.com/project-slug: github/pocket/firefox-api-proxy
     sentry.io/project-slug: "firefoxapiproxy"
   links:
-    - url: https://firefox-api-proxy.getpocket.com/
+    - url: https://firefox-api-proxy.readitlater.com/
       title: Firefox API Proxy (Production)
       icon: collections
     - url: https://firefox-api-proxy.getpocket.dev/
