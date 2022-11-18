@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/node';
 import AWSXRay from 'aws-xray-sdk-core';
 import xrayExpress from 'aws-xray-sdk-express';
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import https from 'https';
 
 import config from './config';
@@ -36,6 +37,7 @@ app.use(xrayExpress.openSegment(serviceName));
 //Set XRay to use the host header to open its segment name.
 AWSXRay.middleware.enableDynamicNaming('*');
 
+app.use(cookieParser());
 app.use(express.json());
 
 app.get('/.well-known/server-health', (req, res) => {

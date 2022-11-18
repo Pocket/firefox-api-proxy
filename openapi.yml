@@ -6,7 +6,7 @@ info:
     name: ISC
     url: https://opensource.org/licenses/ISC
 servers:
-  - url: https://firefox-api-proxy.getpocket.com
+  - url: https://firefox-api-proxy.readitlater.com
     description: Production environment
   - url: https://firefox-api-proxy.getpocket.dev
     description: Development environment
@@ -31,6 +31,23 @@ components:
 
   # Common schema definitions
   schemas:
+    Error:
+      type: object
+      properties:
+        id:
+          type: string
+          description: A unique identifier for this particular instance of the error
+        status:
+          type: string
+          description: HTTP status code string associated with the response
+        title:
+          type: string
+          description: A short human readable summary of the error
+    ErrorResponse:
+      type: array
+      items:
+        oneOf:
+          - $ref: "#/components/schemas/Error"
     Save:
       type: object
       required:
@@ -121,7 +138,7 @@ components:
       type: apiKey
       in: cookie
       name: 159e76e
-      description: A portion of `WebSession` legacy auth.
+      description: A portion of `WebSession` legacy auth. Session lookup.
     # this is usually transmitted via query params in web V3, tentatively move to headers
     WSConsumerKeyAuth:
       type: apiKey
@@ -161,6 +178,10 @@ paths:
                         - $ref: "#/components/schemas/PendingSave"
         '401':
           description: Authorization is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: This proxy service encountered an unexpected error.
         '502':
