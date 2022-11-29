@@ -8,9 +8,7 @@ This service proxies Firefox browser API requests across multiple back end servi
 
 [OpenAPI](https://swagger.io/specification/) is being used for documentation, request validation, response validation, and will be leveraged in the future for additional protections against breaking changes.
 
-This initial implementation transforms requests against this proxy, into requests against the web V3 API, providing a subset of the original service's functionality.
-
-In the future this will be extended to include reaching out to GraphQL and possibly other services.
+This initial implementation transforms requests against this proxy, into requests against the 'client-api' graph via the Web graphql proxy, providing a subset of the V3 Web API's functionality specifically for firefox clients (desktop, and probably mobile in the future).
 
 ## File structure
 
@@ -46,6 +44,21 @@ npm run start:dev
 ```
 
 You will need authentication appropriate for the web V3 API deployment environment that is backing requests.
+
+### Leading with documentation, generated types
+
+It is strongly suggested to lead implementation of features with changes to:
+
+- `./openapi.yml`
+- `./src/graphql-proxy/**/*.graphql`
+
+These files are used to generate the types files in `./src/generated/*` with the following npm script:
+
+```bash
+npm run codegen
+```
+
+Upon changing these files and generating types, the compiler and unit tests should guide you through required changes to remain compatible with older versions of the APIs.
 
 // TODO: instructions for manual testing from openapi docs
 // TODO: instructions for manual testing from locally built client
