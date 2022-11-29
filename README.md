@@ -8,7 +8,7 @@ This service proxies Firefox browser API requests across multiple back end servi
 
 [OpenAPI](https://swagger.io/specification/) is being used for documentation, request validation, response validation, and will be leveraged in the future for additional protections against breaking changes.
 
-This initial implementation transforms requests against this proxy, into requests against the 'client-api' graph via the Web graphql proxy, providing a subset of the V3 Web API's functionality specifically for firefox clients (desktop, and probably mobile in the future).
+This initial implementation transforms requests against this proxy, into requests against the 'pocket-graph' via the Web graphql proxy, providing a subset of the V3 Web API's functionality specifically for firefox clients (desktop, and probably mobile in the future).
 
 ## File structure
 

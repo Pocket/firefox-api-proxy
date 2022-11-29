@@ -1,9 +1,33 @@
-query RecentSaves(
-  $filter: SavedItemsFilter
-  $pagination: PaginationInput
-) {
+"""
+Enum to specify the sort order of SavedItems fetched
+"""
+enum SavedItemsSortOrder {
+  ASC
+  DESC
+}
+"""
+Enum to specify the sort by field (these are the current options, we could add more in the future)
+"""
+enum SavedItemsSortBy {
+  CREATED_AT
+  UPDATED_AT
+  FAVORITED_AT
+  ARCHIVED_AT
+}
+
+"""
+Specifying default sort order for this query.
+
+Trying to be as explicit as possible with intent here. These queries may have
+a very long lifetime, create another similar query if we need to access saves
+in another route.
+"""
+query RecentSaves($pagination: PaginationInput, $filter: SavedItemsFilter) {
   user {
-    savedItems(pagination: $pagination, filter: $filter) {
+    savedItems(pagination: $pagination, filter: $filter, sort: {
+      sortBy: CREATED_AT,
+      sortOrder: DESC
+    }) {
       edges {
         cursor
         node {
