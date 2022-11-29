@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
 const router = express.Router();
 
-import WebSessionAuth from '../../auth/web-session';
-import { paths } from '../../generated/openapi/types';
+import WebSessionAuth from '../../../auth/web-session';
+import { paths } from '../../../generated/openapi/types';
 
 type RecentSavesResponse =
   paths['/desktop/v1/recent-saves']['get']['responses']['200']['content']['application/json'];
