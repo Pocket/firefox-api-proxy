@@ -1,0 +1,32 @@
+query RecentSaves($pagination: PaginationInput, $filter: SavedItemsFilter) {
+  user {
+    savedItems(pagination: $pagination, filter: $filter, sort: {
+      sortBy: CREATED_AT,
+      sortOrder: DESC
+    }) {
+      edges {
+        cursor
+        node {
+          id
+          status
+          url
+          item {
+            __typename
+            ... on Item {
+              wordCount
+              topImage {
+                url
+              }
+              title
+              timeToRead
+              resolvedUrl
+              givenUrl
+              excerpt
+              domain
+            }
+          }
+        }
+      }
+    }
+  }
+}

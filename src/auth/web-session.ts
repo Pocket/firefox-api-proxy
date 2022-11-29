@@ -1,5 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 
+import { components } from '../generated/openapi/types';
+
+type ErrorResponse = components['schemas']['ErrorResponse'];
+
 /**
  * This is an authentication middleware for the WebSession auth type.
  *
@@ -69,7 +73,7 @@ const WebSessionAuth = (
           title: 'Unauthorized',
         },
       ],
-    });
+    } as ErrorResponse);
     return;
   }
 

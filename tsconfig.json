@@ -4,6 +4,6 @@
     "outDir": "dist",
     "rootDirs": ["src"]
   },
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "src/**/__mocks__/*.ts"],
   "include": ["src/**/*.ts", "src/config"]
 }
