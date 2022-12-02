@@ -65,6 +65,8 @@ const queryParametersSchema = buildParameterSchema(PARAMETER_TYPES.QUERY);
 const validateQP = ajv.compile(queryParametersSchema);
 
 /**
+ * Internal function.
+ *
  * All express query parameters are provided as strings.
  *
  * Sets defaults for any parameters with default values, coerces to
@@ -87,7 +89,12 @@ export const setDefaultsAndCoerceTypes = (
 };
 
 /**
+ * Internal function.
+ *
  * Validates query parameters against the OpenAPI provided JSONSchema.
+ *
+ * Returns APIErrorResponse that should be sent to the client along with
+ * a non-200 status code if the parameters are invalid.
  */
 export const validate = (
   query: RecentSavesQueryParameters
@@ -115,6 +122,14 @@ export const validate = (
   return null;
 };
 
+/**
+ * Internal function.
+ *
+ * Converts a set of RecentSavesQueryParameters to a corresponding
+ * set of RecentSavesQueryVariables for the GraphQL client.
+ *
+ * @param query
+ */
 export const transform = (
   query: RecentSavesQueryParameters
 ): RecentSavesQueryVariables => {
@@ -125,6 +140,17 @@ export const transform = (
   };
 };
 
+/**
+ * Use this in the route handler.
+ *
+ * Parses query parameter strings as provided by express.req.query,
+ * sets defaults, validates them, and transforms them into
+ * RecentSavesQueryVariables for the GraphQL client.
+ *
+ * This returns a discriminated union that includes errors. Be sure
+ * to check for them and return them to the client if present.
+ * @param query
+ */
 export const handleQueryParameters = (
   query: RecentSavesQueryParameterStrings
 ): RecentSavesQueryVariables | APIErrorResponse => {

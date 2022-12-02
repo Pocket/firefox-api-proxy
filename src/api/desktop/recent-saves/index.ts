@@ -23,7 +23,7 @@ router
       const variables = handleQueryParameters(req.query);
 
       if ((variables as APIErrorResponse).errors) {
-        res.json(variables);
+        res.status(400).json(variables);
         return;
       }
 

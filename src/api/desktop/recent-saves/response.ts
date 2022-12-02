@@ -48,6 +48,12 @@ const reduceGraphPendingItem = (savedItem: GraphSavedItem): PendingSave => {
   };
 };
 
+/**
+ * Pattern matching to select the correct reducer for each SavedItem,
+ * or to just return null if some unrecognized type is provided.
+ *
+ * @param savedItem
+ */
 const reduceItem = (savedItem: GraphSavedItemEdge): ValidReducerResponse => {
   switch (savedItem.node.item.__typename) {
     case 'Item':
