@@ -1,6 +1,8 @@
-query RecentSaves($pagination: PaginationInput, $filter: SavedItemsFilter) {
+query RecentSaves($pagination: PaginationInput) {
   user {
-    savedItems(pagination: $pagination, filter: $filter, sort: {
+    savedItems(pagination: $pagination, filter: {
+      statuses: [UNREAD],
+    }, sort: {
       sortBy: CREATED_AT,
       sortOrder: DESC
     }) {

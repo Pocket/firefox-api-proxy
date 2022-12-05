@@ -26,6 +26,8 @@ export interface components {
       status?: string;
       /** @description A short human readable summary of the error */
       title?: string;
+      /** @description A more detailed explanation of the error intended for human debugging */
+      detail?: string;
       /** @description An object containing references to the source of the error */
       source?: {
         /** @description String indicating which URI query parameter caused the error */

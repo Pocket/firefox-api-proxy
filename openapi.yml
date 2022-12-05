@@ -29,6 +29,9 @@ components:
         title:
           type: string
           description: A short human readable summary of the error
+        detail:
+          type: string
+          description: A more detailed explanation of the error intended for human debugging
         source:
           type: object
           description: An object containing references to the source of the error
