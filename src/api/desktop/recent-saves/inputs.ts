@@ -2,11 +2,13 @@
  * Input validators and transformers live here.
  *
  * Inputs for this route are currently only query parameters.
+ *
+ * Query validation is the one piece of this server that is not
+ * paired with the OpenAPI specification. Any changes to this file
+ * **MUST** have corresponding changes to the OpenAPI spec and vice
+ * versa.
  */
 
-import Ajv from 'ajv';
-
-import OpenApiSpec from '../../OpenAPISpec';
 import { components, paths } from '../../../generated/openapi/types';
 import { ToStringParams } from '../../../types';
 import { RecentSavesQueryVariables } from '../../../generated/graphql/types';
@@ -19,50 +21,6 @@ type RecentSavesQueryParameterStrings =
   ToStringParams<RecentSavesQueryParameters>;
 
 type APIErrorResponse = components['schemas']['ErrorResponse'];
-
-// initialize ajv for validation
-const ajv = new Ajv();
-const parametersArray =
-  OpenApiSpec['paths']['/desktop/v1/recent-saves']['get']['parameters'];
-
-enum PARAMETER_TYPES {
-  QUERY = 'query',
-}
-
-/**
- * query, path, header, and cookie parameters are all co-located isolate
- * just query parameters into a JSON schema that matches the express query
- * parameter object.
- *
- * Build this programmatically so that added properties are valid after
- * being documented.
- */
-const buildParameterSchema = (type: PARAMETER_TYPES) => {
-  return (
-    parametersArray
-      // filter to only a specific type of parameters
-      .filter((p) => p.in === 'query')
-      // reduce all query parameters into a JSONSchema object
-      .reduce(
-        (schema, qp) => {
-          schema.properties[qp.name] = qp.schema;
-          if (qp.required) {
-            schema.required.push(qp.name);
-          }
-          return schema;
-        },
-        {
-          type: 'object',
-          required: [],
-          properties: {},
-        }
-      )
-  );
-};
-
-const queryParametersSchema = buildParameterSchema(PARAMETER_TYPES.QUERY);
-
-const validateQP = ajv.compile(queryParametersSchema);
 
 /**
  * Internal function.
@@ -99,11 +57,12 @@ export const setDefaultsAndCoerceTypes = (
 export const validate = (
   query: RecentSavesQueryParameters
 ): APIErrorResponse | null => {
-  const valid = validateQP(query);
+  const valid = query?.count >= 1 && query?.count <= 20;
 
   if (!valid) {
-    // TODO: this should be a transformation from a validateQP error
     // only one error is possible here, just build it manually
+    // detail and source must be built procedurally if we introduce more
+    // parameters here
     return {
       errors: [
         {
