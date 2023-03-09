@@ -51,7 +51,7 @@ router
           },
         ],
       };
-      res.json(errorResponse);
+      res.status(500).json(errorResponse);
       return;
     }
   });
