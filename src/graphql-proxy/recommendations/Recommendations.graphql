@@ -1,0 +1,23 @@
+query NewTabSlate($locale: String!, $region: String, $count: Int) {
+  newTabSlate(locale: $locale, region: $region) {
+    recommendations(count: $count) {
+      corpusItem {
+        excerpt
+        id
+        imageUrl
+        publisher
+        title
+        url
+        savedItem {
+          __typename
+          item {
+            ... on Item {
+              timeToRead
+              wordCount
+            }
+          }
+        }
+      }
+    }
+  }
+}
