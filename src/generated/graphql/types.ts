@@ -68,6 +68,10 @@ export type BulletedListElement = ListElement & {
   level: Scalars['Int'];
 };
 
+/**
+ * Apollo Server @cacheControl directive caching behavior either for a single field, or for all fields that
+ * return a particular type
+ */
 export enum CacheControlScope {
   Private = 'PRIVATE',
   Public = 'PUBLIC'
@@ -1421,7 +1425,7 @@ export type Query = {
    */
   shareableList?: Maybe<ShareableList>;
   /** Returns a publicly-shared Shareable List. Note: this query does not require user authentication. */
-  shareableListPublic?: Maybe<ShareableList>;
+  shareableListPublic?: Maybe<ShareableListPublic>;
   /**
    * Looks up and returns an array of Shareable Lists for a given user ID for a given user.
    * (the user ID will be coming through with the headers)
@@ -2269,6 +2273,40 @@ export enum ShareableListModerationStatus {
   Visible = 'VISIBLE'
 }
 
+/**
+ * A list that has been already shared publicly.
+ * This type is needed as it needs to be cached.
+ */
+export type ShareableListPublic = ShareableListInterface & {
+  __typename?: 'ShareableListPublic';
+  /** The timestamp of when the list was created by its owner. */
+  createdAt: Scalars['ISOString'];
+  /** Optional text description of a Shareable List. Provided by the Pocket user. */
+  description?: Maybe<Scalars['String']>;
+  /** A unique string identifier in UUID format. */
+  externalId: Scalars['ID'];
+  /** Pocket Saves that have been added to this list by the Pocket user. */
+  listItems: Array<ShareableListItem>;
+  /** The moderation status of the list. Defaults to VISIBLE. */
+  moderationStatus: ShareableListModerationStatus;
+  /**
+   * A URL-ready identifier of the list. Generated from the title
+   * of the list when it's first made public. Unique per user.
+   */
+  slug?: Maybe<Scalars['String']>;
+  /** The status of the list. Defaults to PRIVATE. */
+  status: ShareableListStatus;
+  /** The title of the list. Provided by the Pocket user. */
+  title: Scalars['String'];
+  /**
+   * The timestamp of when the list was last updated by its owner
+   * or a member of the moderation team.
+   */
+  updatedAt: Scalars['ISOString'];
+  /** The user who created this shareable list. */
+  user: User;
+};
+
 /** The status of a Shareable List. Defaults to PRIVATE - visible only to its owner. */
 export enum ShareableListStatus {
   /** The list is only visible to its owner - the Pocket user who created it. */
@@ -2739,8 +2777,8 @@ export type NewTabSlateQueryVariables = Exact<{
 }>;
 
 
-export type NewTabSlateQuery = { __typename?: 'Query', newTabSlate: { __typename?: 'CorpusSlate', recommendations: Array<{ __typename?: 'CorpusRecommendation', corpusItem: { __typename?: 'CorpusItem', excerpt: string, id: string, imageUrl: any, publisher: string, title: string, url: any, savedItem?: { __typename: 'SavedItem', item: { __typename?: 'Item', timeToRead?: number | null, wordCount?: number | null } | { __typename?: 'PendingItem' } } | null } }> } };
+export type NewTabSlateQuery = { __typename?: 'Query', newTabSlate: { __typename?: 'CorpusSlate', recommendations: Array<{ __typename?: 'CorpusRecommendation', tileId?: number | null, corpusItem: { __typename?: 'CorpusItem', excerpt: string, imageUrl: any, publisher: string, title: string, url: any } }> } };
 
 
 export const RecentSavesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"RecentSaves"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"savedItems"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"statuses"},"value":{"kind":"ListValue","values":[{"kind":"EnumValue","value":"UNREAD"}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"sort"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"sortBy"},"value":{"kind":"EnumValue","value":"CREATED_AT"}},{"kind":"ObjectField","name":{"kind":"Name","value":"sortOrder"},"value":{"kind":"EnumValue","value":"DESC"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"item"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Item"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordCount"}},{"kind":"Field","name":{"kind":"Name","value":"topImage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}}]}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"timeToRead"}},{"kind":"Field","name":{"kind":"Name","value":"resolvedUrl"}},{"kind":"Field","name":{"kind":"Name","value":"givenUrl"}},{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"domain"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<RecentSavesQuery, RecentSavesQueryVariables>;
-export const NewTabSlateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NewTabSlate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locale"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"region"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"count"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"newTabSlate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}},{"kind":"Argument","name":{"kind":"Name","value":"region"},"value":{"kind":"Variable","name":{"kind":"Name","value":"region"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"recommendations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"count"},"value":{"kind":"Variable","name":{"kind":"Name","value":"count"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"corpusItem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"publisher"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"savedItem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"item"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Item"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"timeToRead"}},{"kind":"Field","name":{"kind":"Name","value":"wordCount"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<NewTabSlateQuery, NewTabSlateQueryVariables>;
+export const NewTabSlateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NewTabSlate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locale"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"region"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"count"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"newTabSlate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}},{"kind":"Argument","name":{"kind":"Name","value":"region"},"value":{"kind":"Variable","name":{"kind":"Name","value":"region"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"recommendations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"count"},"value":{"kind":"Variable","name":{"kind":"Name","value":"count"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tileId"}},{"kind":"Field","name":{"kind":"Name","value":"corpusItem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"publisher"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]}}]}}]} as unknown as DocumentNode<NewTabSlateQuery, NewTabSlateQueryVariables>;
