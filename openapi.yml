@@ -1,7 +1,7 @@
 openapi: '3.0.3'
 info:
   title: Firefox API Proxy
-  version: '0.1'
+  version: '0.2'
   license:
     name: ISC
     url: https://opensource.org/licenses/ISC
@@ -114,8 +114,41 @@ components:
         givenUrl:
           type: string
           description: The URL the user saved to their list.
-
-
+    Recommendation:
+      type: object
+      description: These items contain similar content to saves, but have been through a curation process and have more guaranteed data.
+      required:
+        - __typename
+        - tileId
+        - url
+        - title
+        - excerpt
+        - publisher
+        - imageUrl
+      properties:
+        __typename:
+          type: string
+          description: Constant identifier for Recommendation type objects.
+          enum:
+            - Recommendation
+        tileId:
+          type: number
+          description: Numerical identifier for the Recommendation. This is specifically a number for Fx client and Mozilla data pipeline compatibility.
+        url:
+          type: string
+          description: The URL the Recommendation.
+        title:
+          type: string
+          description: The title of the Recommendation.
+        excerpt:
+          type: string
+          description: An excerpt from the Recommendation.
+        publisher:
+          type: string
+          description: The publisher of the Recommendation.
+        imageUrl:
+          type: string
+          description: The primary image for a Recommendation.
 
   # securitySchemes roughly map to authentication middleware
   securitySchemes:
@@ -149,6 +182,60 @@ components:
       description: A portion of `WebSession` legacy auth.
 
 paths:
+  /desktop/v1/recommendations:
+    get:
+      summary: Gets a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth.
+      operationId: getRecommendations
+      # Intentionally blank security. No auth required.
+      security: []
+      parameters:
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            # Do not exceed maxPageSize https://github.com/Pocket/list-api/blob/main/src/config/index.ts#L107
+            maximum: 30
+            default: 30
+          description: The number of items to return.
+        - name: locale
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - fr-FR
+              - it-IT
+              - es-ES
+        # Region does not currently do anything, but will be added here later.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      oneOf:
+                        - $ref: "#/components/schemas/Recommendation"
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: This proxy service encountered an unexpected error.
+        '502':
+          description: Services downstream from this proxy encountered an unexpected error. Invalid (expired) auth returns a 500 error in downstream services, so unfortunately this is also currently a 502 response as it cannot be differentiated.
+        '504':
+          description: Requests to downstream services timed out.
   /desktop/v1/recent-saves:
     get:
       summary: Gets a list of the most recent saves for a specific user
