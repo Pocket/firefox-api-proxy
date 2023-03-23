@@ -11,6 +11,10 @@ type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> &
 type OneOf<T extends any[]> = T extends [infer Only] ? Only : T extends [infer A, infer B, ...infer Rest] ? OneOf<[XOR<A, B>, ...Rest]> : never;
 
 export interface paths {
+  "/desktop/v1/recommendations": {
+    /** Gets a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth. */
+    get: operations["getRecommendations"];
+  };
   "/desktop/v1/recent-saves": {
     /** Gets a list of the most recent saves for a specific user */
     get: operations["getRecentSaves"];
@@ -74,6 +78,26 @@ export interface components {
       /** @description The URL the user saved to their list. */
       givenUrl: string;
     };
+    /** @description These items contain similar content to saves, but have been through a curation process and have more guaranteed data. */
+    Recommendation: {
+      /**
+       * @description Constant identifier for Recommendation type objects. 
+       * @enum {string}
+       */
+      __typename: "Recommendation";
+      /** @description Numerical identifier for the Recommendation. This is specifically a number for Fx client and Mozilla data pipeline compatibility. */
+      tileId: number;
+      /** @description The URL the Recommendation. */
+      url: string;
+      /** @description The title of the Recommendation. */
+      title: string;
+      /** @description An excerpt from the Recommendation. */
+      excerpt: string;
+      /** @description The publisher of the Recommendation. */
+      publisher: string;
+      /** @description The primary image for a Recommendation. */
+      imageUrl: string;
+    };
   };
   responses: never;
   parameters: never;
@@ -86,6 +110,38 @@ export type external = Record<string, never>;
 
 export interface operations {
 
+  getRecommendations: {
+    /** Gets a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth. */
+    parameters: {
+        /** @description The number of items to return. */
+      query: {
+        count?: number;
+        locale: "fr-FR" | "it-IT" | "es-ES";
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        content: {
+          "application/json": {
+            data: (components["schemas"]["Recommendation"])[];
+          };
+        };
+      };
+      /** @description Invalid request parameters */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description This proxy service encountered an unexpected error. */
+      500: never;
+      /** @description Services downstream from this proxy encountered an unexpected error. Invalid (expired) auth returns a 500 error in downstream services, so unfortunately this is also currently a 502 response as it cannot be differentiated. */
+      502: never;
+      /** @description Requests to downstream services timed out. */
+      504: never;
+    };
+  };
   getRecentSaves: {
     /** Gets a list of the most recent saves for a specific user */
     parameters?: {
