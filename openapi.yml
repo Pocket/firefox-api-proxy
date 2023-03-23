@@ -1,7 +1,7 @@
 openapi: '3.0.3'
 info:
   title: Firefox API Proxy
-  version: '0.1'
+  version: '0.2'
   license:
     name: ISC
     url: https://opensource.org/licenses/ISC
@@ -196,9 +196,8 @@ paths:
             type: integer
             minimum: 1
             # Do not exceed maxPageSize https://github.com/Pocket/list-api/blob/main/src/config/index.ts#L107
-            # starting small, always easy to increase max but difficult to shrink
-            maximum: 20
-            default: 10
+            maximum: 30
+            default: 30
           description: The number of items to return.
         - name: locale
           in: query
