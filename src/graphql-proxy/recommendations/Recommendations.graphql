@@ -1,0 +1,14 @@
+query Recommendations($locale: String!, $region: String, $count: Int) {
+  newTabSlate(locale: $locale, region: $region) {
+    recommendations(count: $count) {
+      tileId
+      corpusItem {
+        excerpt
+        imageUrl
+        publisher
+        title
+        url
+      }
+    }
+  }
+}
