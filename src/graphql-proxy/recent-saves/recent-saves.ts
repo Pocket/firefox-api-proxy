@@ -1,5 +1,5 @@
 import { GraphQLClient } from 'graphql-request';
-import WebSessionAuth from '../../auth/web-session';
+import { consumer_key, WebAuth } from '../../auth/types';
 
 import {
   RecentSavesDocument,
@@ -25,10 +25,10 @@ import {
  * @param variables
  */
 const recentSaves = async (
-  auth: WebSessionAuth,
+  auth: WebAuth,
+  consumerKey: consumer_key,
   variables: RecentSavesQueryVariables
 ): Promise<RecentSavesQuery> => {
-  const { consumer_key, cookie } = auth;
   /*
     TODO: potential improvements:
     - Initialization of this client could be moved outside this function scope
@@ -41,16 +41,16 @@ const recentSaves = async (
       errors encountered and have samples for implementing error handlers.
   */
   const client = new GraphQLClient(
-    `https://getpocket.com/graphql?consumer_key=${consumer_key}&enable_cors=1`,
+    `https://getpocket.com/graphql?consumer_key=${consumerKey}&enable_cors=1`,
     {
       fetch,
     }
   );
+  auth.authenticateClient(client);
 
   return client.request<RecentSavesQuery, RecentSavesQueryVariables>(
     RecentSavesDocument,
-    variables,
-    { cookie } // headers
+    variables
   );
 };
 
