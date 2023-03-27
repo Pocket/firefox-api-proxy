@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 const router = express.Router();
 import * as Sentry from '@sentry/node';
 
-import WebSessionAuth from '../../../auth/web-session';
+import WebSessionAuthHandler from '../../../auth/web-session/webSessionAuthHandler';
 import recentSaves from '../../../graphql-proxy/recent-saves/recent-saves';
 import { handleQueryParameters } from './inputs';
 import { responseTransformer } from './response';
@@ -16,7 +16,7 @@ type APIErrorResponse = components['schemas']['ErrorResponse'];
 
 router
   // User must be authenticated via WebSession
-  .use(WebSessionAuth)
+  .use(WebSessionAuthHandler)
   // getRecentSaves v1
   .get('/v1/recent-saves', async (req: Request, res: Response) => {
     try {
@@ -29,6 +29,7 @@ router
 
       const graphRes = await recentSaves(
         req.auth,
+        req.consumer_key,
         variables as RecentSavesQueryVariables
       );
 

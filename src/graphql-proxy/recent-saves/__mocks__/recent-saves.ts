@@ -5,8 +5,8 @@
  */
 
 import { faker } from '@faker-js/faker';
+import { consumer_key, WebAuth } from '../../../auth/types';
 
-import WebSessionAuth from '../../../auth/web-session';
 import {
   RecentSavesQuery,
   RecentSavesQueryVariables,
@@ -43,7 +43,8 @@ const fakeSaves = (count): RecentSavesQuery['user']['savedItems']['edges'] => {
 };
 
 const recentSaves = async (
-  auth: WebSessionAuth,
+  auth: WebAuth,
+  consumerKey: consumer_key,
   variables: RecentSavesQueryVariables
 ): Promise<RecentSavesQuery> => {
   const count =

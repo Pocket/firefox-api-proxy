@@ -45,6 +45,18 @@ npm run start:dev
 
 You will need authentication appropriate for the web V3 API deployment environment that is backing requests.
 
+### E2E local testing with curl
+
+Local E2E testing requires production Session Auth (cookie) authentication.
+
+A helper script for generating authentication curl args can be found at [./scripts/scrapeCookie.js](./scripts/scrapeCookie.js).
+
+Curl sample:
+
+```bash
+`curl 'http://localhost:4028/desktop/v1/recent-saves?count=1' <AUTH HEADERS GO HERE>`
+```
+
 ### Leading with documentation, generated types
 
 It is strongly suggested to lead implementation of features with changes to:
@@ -59,6 +71,3 @@ npm run codegen
 ```
 
 Upon changing these files and generating types, the compiler and unit tests should guide you through required changes to remain compatible with older versions of the APIs.
-
-// TODO: instructions for manual testing from openapi docs
-// TODO: instructions for manual testing from locally built client

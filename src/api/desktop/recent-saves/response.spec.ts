@@ -8,6 +8,7 @@ import {
   RecentSavesQuery,
   SavedItemStatus,
 } from '../../../generated/graphql/types';
+import { WebAuth } from '../../../auth/types';
 
 jest.mock('../../../graphql-proxy/recent-saves/recent-saves');
 
@@ -33,7 +34,9 @@ describe('response', () => {
     it('handles happy path results', async () => {
       // the default mock is happy path, ensure this is handled.
       const graphResponse = await RecentSaves(
-        { consumer_key: 'junk', cookie: 'junk' }, // junk auth for mock
+        // auth and consumerKey parameters are unimportant to this mock test
+        { junk: 'junk' } as unknown as WebAuth,
+        'junkConsumerKey',
         { pagination: { first: 20 } } // all default params are fine
       );
       const res = responseTransformer(graphResponse);
