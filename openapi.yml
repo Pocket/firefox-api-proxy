@@ -187,7 +187,8 @@ paths:
       summary: Gets a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth.
       operationId: getRecommendations
       # Intentionally blank security. No auth required.
-      security: []
+      security:
+        - WSConsumerKeyAuth: []
       parameters:
         - name: count
           in: query
@@ -202,13 +203,36 @@ paths:
         - name: locale
           in: query
           required: true
+          description: This locale string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive.
           schema:
             type: string
-            enum:
-              - fr-FR
-              - it-IT
-              - es-ES
-        # Region does not currently do anything, but will be added here later.
+            enum: [
+              # relevant docs: https://docs.google.com/document/d/1omclr-eETJ7zAWTMI7mvvsc3_-ns2Iiho4jPEfrmZfo
+              # listing locales that should still be served through the v3 APIs,
+              # these are intentionally disabled for now.
+              # en-CA, en-GB, en-US,
+              # de, de-AT, de-CH,
+
+              # new markets will be served through this API:
+              fr, fr-FR,
+              es, es-ES,
+              it, it-IT,
+            ]
+        - name: region
+          in: query
+          required: true
+          description: This region string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive.
+          schema:
+            type: string
+            enum: [
+              # relevant docs: https://docs.google.com/document/d/1omclr-eETJ7zAWTMI7mvvsc3_-ns2Iiho4jPEfrmZfo
+              # listing regions that should still be served through the v3 APIs,
+              # these are intentionally disabled for now.
+              # US, CA, DE, GB, IN, CH, AT, BE, IE
+
+              # new markets will be served through this API:
+              FR, ES, IT,
+            ]
       responses:
         '200':
           description: OK
