@@ -876,6 +876,12 @@ export type Mutation = {
    * Accepts a list of PocketSave Ids that we want to unfavorite.
    */
   saveUnFavorite?: Maybe<SaveWriteMutationPayload>;
+  /**
+   * Creates a new Save; if the Save already exists (either in List or Archive), "re-add" it.
+   * "Re-adding" unarchives and undeletes the Save as applicable, and refreshes the "createdAt"
+   * timestamp.
+   */
+  saveUpsert: SaveWriteMutationPayload;
   /** Archives a SavedItem */
   updateSavedItemArchive: SavedItem;
   /** Favorites a SavedItem */
@@ -1066,6 +1072,13 @@ export type MutationSaveUnArchiveArgs = {
 /** Default Mutation Type */
 export type MutationSaveUnFavoriteArgs = {
   id: Array<Scalars['ID']>;
+  timestamp: Scalars['ISOString'];
+};
+
+
+/** Default Mutation Type */
+export type MutationSaveUpsertArgs = {
+  input: Array<SaveUpsertInput>;
   timestamp: Scalars['ISOString'];
 };
 
@@ -1760,6 +1773,16 @@ export type SaveUpdateTagsInput = {
   /** Tags to remove, by ID */
   removeTagIds: Array<Scalars['ID']>;
   saveId: Scalars['ID'];
+};
+
+/** Input field for upserting a Save. Used by saveUpsert mutation */
+export type SaveUpsertInput = {
+  /** Optional, create/update the SavedItem as a favorited item */
+  isFavorite?: InputMaybe<Scalars['Boolean']>;
+  /** Optional, title of the SavedItem */
+  title?: InputMaybe<Scalars['String']>;
+  /** The url to create/update the SavedItem with. (the url to save to the list) */
+  url: Scalars['String'];
 };
 
 /** Payload for mutations that create or update Saves */
