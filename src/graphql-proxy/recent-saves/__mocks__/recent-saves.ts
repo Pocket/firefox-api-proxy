@@ -7,6 +7,8 @@
 import { faker } from '@faker-js/faker';
 import { consumer_key, WebAuth } from '../../../auth/types';
 
+import common from '../../__mocks__/common';
+
 import {
   RecentSavesQuery,
   RecentSavesQueryVariables,
@@ -20,23 +22,21 @@ const fakeSaves = (count): RecentSavesQuery['user']['savedItems']['edges'] => {
       cursor: faker.datatype.uuid(), // close enough, opaque id string
       node: {
         __typename: 'SavedItem',
-        id: faker.datatype.number().toString(),
+        id: common.pocketID(),
         status: 'UNREAD' as SavedItemStatus,
-        url: faker.internet.url(),
+        url: common.itemUrl(),
         item: {
           __typename: 'Item',
           wordCount: faker.datatype.number({ max: 1000 }),
           topImage: {
-            url: faker.image.imageUrl(),
+            url: common.itemImage(),
           },
-          title: faker.lorem.lines(1),
+          title: common.itemTitle(),
           timeToRead: faker.datatype.number({ max: 15 }),
-          resolvedUrl: faker.internet.url(),
-          givenUrl: faker.internet.url(),
-          excerpt: faker.lorem.paragraph(),
-          // I haven't actually seen a domain in any of my saves, don't know
-          // what this is supposed to look like
-          domain: null,
+          resolvedUrl: common.itemUrl(),
+          givenUrl: common.itemUrl(),
+          excerpt: common.itemExcerpt(),
+          domain: common.itemDomain(),
         },
       },
     }));
