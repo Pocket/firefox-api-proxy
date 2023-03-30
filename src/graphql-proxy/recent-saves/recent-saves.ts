@@ -1,4 +1,4 @@
-import { GraphQLClient } from 'graphql-request';
+import { webProxyClient } from '../lib/client';
 import { consumer_key, WebAuth } from '../../auth/types';
 
 import {
@@ -8,9 +8,10 @@ import {
 } from '../../generated/graphql/types';
 
 /**
- * This client initializes a `graphql-request` client, performing the query
- * specified in RecentSaves.graphql. This relies on the types generated from
- * this file.
+ * This client performs the query specified in RecentSaves.graphql, utilizing
+ * the generated types for type safe queries.
+ *
+ * This request requires WebAuth.
  *
  * The MVP of this service does not include integration testing of this client.
  * The authentication portions of the GraphQL proxy are in a "Will not change"
@@ -29,25 +30,15 @@ const recentSaves = async (
   consumerKey: consumer_key,
   variables: RecentSavesQueryVariables
 ): Promise<RecentSavesQuery> => {
-  /*
-    TODO: potential improvements:
-    - Initialization of this client could be moved outside this function scope
-      if we start restricting to specific consumer_keys for each API.
-    - Incorporate AbortController for timeouts (map to 504 status in controller),
-      I'm not sure what the default timeouts are for node js fetch, but they're
-      probably too long.
-    - Error handling. All rejected promises returned by this client should be
-      logged to sentry and returned as 500 errors until we have data on real
-      errors encountered and have samples for implementing error handlers.
-  */
-  const client = new GraphQLClient(
-    `https://getpocket.com/graphql?consumer_key=${consumerKey}&enable_cors=1`,
-    {
-      fetch,
-    }
-  );
+  const client = webProxyClient(consumerKey);
   auth.authenticateClient(client);
 
+  /*
+    TODO: potential improvements:
+    - Error handling. Errors that are not 500 errors specific to this request
+      should be handled here as they are implemented in the graph and discovered
+      via sentry.
+  */
   return client.request<RecentSavesQuery, RecentSavesQueryVariables>(
     RecentSavesDocument,
     variables

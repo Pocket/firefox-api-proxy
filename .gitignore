@@ -25,7 +25,6 @@ override.tf.json
 *_override.tf.json
 
 # Other
-lib
 node_modules
 tmp
 .DS_Store
