@@ -114,9 +114,12 @@ export interface operations {
     /** Gets a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth. */
     parameters: {
         /** @description The number of items to return. */
+        /** @description This locale string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive. */
+        /** @description This region string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive. */
       query: {
         count?: number;
-        locale: "fr-FR" | "it-IT" | "es-ES";
+        locale: "fr" | "fr-FR" | "es" | "es-ES" | "it" | "it-IT";
+        region: "FR" | "ES" | "IT";
       };
     };
     responses: {
