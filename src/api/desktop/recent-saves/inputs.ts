@@ -9,9 +9,10 @@
  * versa.
  */
 
-import { components, paths } from '../../../generated/openapi/types';
+import { paths } from '../../../generated/openapi/types';
 import { ToStringParams } from '../../../types';
 import { RecentSavesQueryVariables } from '../../../generated/graphql/types';
+import { BFFFxError, BFFFxErrorInstanceType } from '../../../bfffxError';
 
 // unpack exact OpenAPI generated types for API parameters
 type RecentSavesQueryParameters =
@@ -19,8 +20,6 @@ type RecentSavesQueryParameters =
 
 type RecentSavesQueryParameterStrings =
   ToStringParams<RecentSavesQueryParameters>;
-
-type APIErrorResponse = components['schemas']['ErrorResponse'];
 
 /**
  * Internal function.
@@ -51,31 +50,34 @@ export const setDefaultsAndCoerceTypes = (
  *
  * Validates query parameters against the OpenAPI provided JSONSchema.
  *
- * Returns APIErrorResponse that should be sent to the client along with
- * a non-200 status code if the parameters are invalid.
+ * Returns a BFFFxError if input validation fails.
  */
 export const validate = (
   query: RecentSavesQueryParameters
-): APIErrorResponse | null => {
+): BFFFxErrorInstanceType | null => {
   const valid = query?.count >= 1 && query?.count <= 20;
 
   if (!valid) {
     // only one error is possible here, just build it manually
     // detail and source must be built procedurally if we introduce more
     // parameters here
-    return {
-      errors: [
-        {
-          id: '3f262c60-c34d-4ea8-8a14-1012d2ef7953',
-          status: '400',
-          title: 'Bad Request',
-          detail: 'The count query parameter must be >0 and <=20',
-          source: {
-            parameters: 'count',
+    const error = new BFFFxError('input validation failure', {
+      status: 400,
+      jsonResponse: {
+        errors: [
+          {
+            id: '3f262c60-c34d-4ea8-8a14-1012d2ef7953',
+            status: '400',
+            title: 'Bad Request',
+            detail: 'The count query parameter must be >0 and <=20',
+            source: {
+              parameters: 'count',
+            },
           },
-        },
-      ],
-    };
+        ],
+      },
+    });
+    return error;
   }
 
   return null;
@@ -112,12 +114,12 @@ export const transform = (
  */
 export const handleQueryParameters = (
   query: RecentSavesQueryParameterStrings
-): RecentSavesQueryVariables | APIErrorResponse => {
+): RecentSavesQueryVariables | BFFFxErrorInstanceType => {
   const coerced = setDefaultsAndCoerceTypes(query);
-  const errors = validate(coerced);
+  const error = validate(coerced);
 
-  if (errors) {
-    return errors;
+  if (error) {
+    return error;
   }
 
   return transform(coerced);

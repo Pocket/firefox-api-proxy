@@ -20,20 +20,28 @@ export class WebSessionAuth implements WebAuth {
    */
   private cookie: string;
   /**
+   * a95b4b6 cookie
+   *
    * derived user identifier, this is not sensitive and is logged in sentry
    */
   private encodedUserIdentifier: string;
   /**
+   * 159e76e cookie
+   *
    * cookie content, no other auth content may be used directly
    * for lookups. This facilitates that lookup. Do not expose this
    * unless being used for auth.
    */
   private lookupId: string;
   /**
+   * sess_guid cookie
+   *
    * derived session identifier, this is not sensitive and is logged in sentry
    */
   private sessionGuid: string;
   /**
+   * d4a79ec cookie
+   *
    * direct session identifier, Do not expose this unless being used for auth.
    */
   private sessionIdentifier: string;
@@ -80,11 +88,14 @@ export class WebSessionAuth implements WebAuth {
   }
 
   /**
-   * TODO: will fill this in as a part of observability work for closer review
+   * Extracts user and session identifiers from this auth, and returns
+   * them as a flat objects for use as sentry or log tags.
    */
-  async sentryTags(): Promise<Record<string, string>> {
-    // just throw unimplemented error
-    throw Error('not implemented');
+  sentryTags(): Record<string, string> {
+    return {
+      session: this.sessionGuid,
+      user: this.encodedUserIdentifier,
+    };
   }
 
   /**

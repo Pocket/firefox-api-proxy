@@ -1,6 +1,13 @@
 import { faker } from '@faker-js/faker';
+import assert from 'assert';
+import {
+  APIError,
+  APIErrorResponse,
+  BFFFxError,
+  BFFFxErrorInstanceType,
+} from '../../../bfffxError';
 import { RecentSavesQueryVariables } from '../../../generated/graphql/types';
-import { components, paths } from '../../../generated/openapi/types';
+import { paths } from '../../../generated/openapi/types';
 import {
   handleQueryParameters,
   setDefaultsAndCoerceTypes,
@@ -10,9 +17,6 @@ import {
 
 type RecentSavesQueryParameters =
   paths['/desktop/v1/recent-saves']['get']['parameters']['query'];
-
-type APIErrorResponse = components['schemas']['ErrorResponse'];
-type APIError = components['schemas']['Error'];
 
 describe('query', () => {
   describe('setDefaultsAndCoerceTypes', () => {
@@ -40,7 +44,8 @@ describe('query', () => {
     });
 
     it('returns error with 0 count', () => {
-      const errors = validate({ count: 0 });
+      const error: BFFFxErrorInstanceType = validate({ count: 0 });
+      const errors = JSON.parse(error.stringResponse);
       expect(errors).toEqual(
         expect.objectContaining<APIErrorResponse>({
           errors: expect.arrayContaining<Array<APIError>>([
@@ -58,7 +63,8 @@ describe('query', () => {
     });
 
     it('returns errors with negative count', () => {
-      const errors = validate({ count: -1 });
+      const error: BFFFxErrorInstanceType = validate({ count: -1 });
+      const errors = JSON.parse(error.stringResponse);
       expect(errors).toEqual(
         expect.objectContaining<APIErrorResponse>({
           errors: expect.arrayContaining<Array<APIError>>([
@@ -76,7 +82,8 @@ describe('query', () => {
     });
 
     it('returns error with count > 20', () => {
-      const errors = validate({ count: 51 });
+      const error: BFFFxErrorInstanceType = validate({ count: 51 });
+      const errors = JSON.parse(error.stringResponse);
       expect(errors).toEqual(
         expect.objectContaining<APIErrorResponse>({
           errors: expect.arrayContaining<Array<APIError>>([
@@ -113,7 +120,9 @@ describe('query', () => {
         count: '-1',
       };
 
-      const errors = handleQueryParameters(input);
+      const error = handleQueryParameters(input);
+      assert(error instanceof BFFFxError);
+      const errors = JSON.parse(error.stringResponse);
       expect(errors).toEqual(
         expect.objectContaining<APIErrorResponse>({
           errors: expect.arrayContaining<Array<APIError>>([

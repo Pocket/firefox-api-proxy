@@ -1,24 +1,18 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express from 'express';
 const router = express.Router();
 
 import config from '../config';
 import Desktop from './desktop';
-import ConsumerKeyHandler from '../auth/consumerKeyHandler';
+import CacheControlHandler from './lib/cacheControlHandler';
 
-// register all /firefox routes
-router
-  // ConsumerKeyHandler ensures all requests contain a consumer
-  // key, even anonymous requests, and populates req.consumer_key
-  .use(ConsumerKeyHandler)
+// register all /desktop routes
+router.use(
+  '/desktop',
   // set Cache-control headers on all routes
-  // move this further down the chain if we need control per-route.
-  .use((req: Request, res: Response, next: NextFunction) => {
-    if (config.app.environment !== 'development') {
-      // 30 minutes client side cache
-      res.set('Cache-control', 'private, max-age=1800');
-    }
-    next();
-  })
-  .use('/desktop', Desktop);
+  // this can be overwritten on downstream routes with another handler
+  CacheControlHandler('private, max-age=1800', config),
+  // register Desktop sub-router
+  Desktop
+);
 
 export default router;
