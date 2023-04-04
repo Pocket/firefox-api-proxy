@@ -20,7 +20,6 @@ app.get('/authenticated', (req: express.Request, res: express.Response) => {
 
 describe('WebSessionAuthHandler', () => {
   const cookies = {
-    sess_guid: 'someCookie1',
     a95b4b6: 'someCookie2',
     d4a79ec: 'someCookie3',
     '159e76e': 'someCookie4',
@@ -41,10 +40,10 @@ describe('WebSessionAuthHandler', () => {
   });
 
   describe('unhappy path', () => {
-    it('returns 401 status error if no consumer_key is present', async () => {
-      // remove sess_guid
+    it('returns 401 status error if no a95b4b6 is present', async () => {
+      // remove a95b4b6
       const requestCookies = { ...cookies };
-      delete requestCookies.sess_guid;
+      delete requestCookies.a95b4b6;
 
       const res = await request(app)
         .get('/authenticated')
