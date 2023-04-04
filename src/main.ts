@@ -13,6 +13,8 @@ const serviceName = 'firefox-api-proxy';
 Sentry.init({
   ...config.sentry,
   debug: config.sentry.environment == 'development',
+  // this does not function because we do not do session management in this service.
+  autoSessionTracking: false,
 });
 
 //Set XRAY to just log if the context is missing instead of a runtime error
