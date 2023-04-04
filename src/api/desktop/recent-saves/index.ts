@@ -39,7 +39,7 @@ router.get(
       res.json(responseTransformer(graphRes) as RecentSavesResponse);
     } catch (error) {
       // attempt to extract error message
-      const errorMessage = `Unexpected upstream GraphQL error: ${parseGraphQLErrorMessage(
+      const errorMessage = `/desktop/recent-saves: Unexpected upstream GraphQL error: ${parseGraphQLErrorMessage(
         error
       )}`;
       // log error to cloudwatch

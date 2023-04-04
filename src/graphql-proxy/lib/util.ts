@@ -1,4 +1,5 @@
 import { GraphQLError } from 'graphql';
+import { ClientError } from 'graphql-request';
 
 type GraphQLErrorResponse = {
   errors: GraphQLError[];
@@ -7,11 +8,19 @@ type GraphQLErrorResponse = {
 /**
  * Best effort attempt to parse a human readable error message
  * from a GraphQL error response.
+ *
+ * Full graphql error messages are too long and get truncated in
+ * sentry. Attempt to get a shorter human readable error message.
  * @param err
  */
-export const parseGraphQLErrorMessage = (err: Error | string): string => {
-  if (err instanceof Error) {
-    // if it's an error, just return the error message
+export const parseGraphQLErrorMessage = (
+  err: ClientError | Error | string
+): string => {
+  if (err instanceof ClientError) {
+    // attempt to get internal message
+    return err.response?.errors?.[0]?.message ?? err.message;
+  } else if (err instanceof Error) {
+    // if it's a generic error, just return the error message
     return err.message;
   } else if (typeof err === 'string') {
     // attempt to parse a GraphQL error
