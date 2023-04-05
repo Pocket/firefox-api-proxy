@@ -7,7 +7,6 @@ describe('WebSessionAuth', () => {
   let mockRequest: Partial<Request>;
 
   const cookies = {
-    sess_guid: 'someCookie1',
     a95b4b6: 'someCookie2',
     d4a79ec: 'someCookie3',
     '159e76e': 'someCookie4',
@@ -28,13 +27,6 @@ describe('WebSessionAuth', () => {
   });
 
   describe('fromRequest', () => {
-    it('returns null if no sess_guid', () => {
-      delete mockRequest.cookies.sess_guid;
-      const wsAuth = WebSessionAuth.fromRequest(mockRequest as Request);
-
-      expect(wsAuth).toBeNull();
-    });
-
     it('returns null if no a95b4b6', () => {
       delete mockRequest.cookies.a95b4b6;
       const wsAuth = WebSessionAuth.fromRequest(mockRequest as Request);

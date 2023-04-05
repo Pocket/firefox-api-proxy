@@ -1,7 +1,7 @@
 openapi: '3.0.3'
 info:
   title: Firefox API Proxy
-  version: '0.2'
+  version: '0.3'
   license:
     name: ISC
     url: https://opensource.org/licenses/ISC
@@ -154,11 +154,6 @@ components:
   securitySchemes:
     # The following schemes prefixed with "WS" all constitute a `WebSession` auth.
     # These are all required together for requests that require this auth type.
-    WSSessionGuidAuth:
-      type: apiKey
-      in: cookie
-      name: sess_guid
-      description: A portion of `WebSession` legacy auth.
     WSUserAuth:
       type: apiKey
       in: cookie
@@ -174,12 +169,24 @@ components:
       in: cookie
       name: 159e76e
       description: A portion of `WebSession` legacy auth. Session lookup.
-    # this is usually transmitted via query params in web V3, tentatively move to headers
     WSConsumerKeyAuth:
+      type: apiKey
+      in: query
+      name: consumer_key
+      description: A portion of `WebSession` legacy auth.
+    # Originally tried to support this via headers and will continue to support
+    # this alternative, however I suspect this may be causing issues. _ is not
+    # valid character in headers. Many services allow this through, and this works
+    # the overwhelming majority of the time. However, there have been client reports
+    # of rejecting requests due to missing consumer_key, and I suspect some edge case
+    # could be removing this.
+    #
+    # Avoiding confusion around renaming, and just preferring query params first.
+    WSConsumerKeyAuthAlias:
       type: apiKey
       in: header
       name: consumer_key
-      description: A portion of `WebSession` legacy auth.
+      description: A portion of `WebSession` legacy auth. This isn't actually a valid header (_ is not permitted), prefer query param.
 
 paths:
   /desktop/v1/recommendations:
@@ -189,6 +196,7 @@ paths:
       # Intentionally blank security. No auth required.
       security:
         - WSConsumerKeyAuth: []
+        - WSConsumerKeyAuthAlias: []
       parameters:
         - name: count
           in: query
@@ -266,11 +274,14 @@ paths:
       operationId: getRecentSaves
       security:
         # require all WS (WebSession) security schemes together
-        - WSSessionGuidAuth: []
-          WSUserAuth: []
+        - WSUserAuth: []
           WSSessionAuth: []
           WSLookupAuth: []
           WSConsumerKeyAuth: []
+        - WSUserAuth: []
+          WSSessionAuth: []
+          WSLookupAuth: []
+          WSConsumerKeyAuthAlias: []
       parameters:
         - name: count
           in: query

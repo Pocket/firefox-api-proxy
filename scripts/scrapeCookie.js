@@ -10,7 +10,7 @@
 
 const cookie = process.argv[2];
 
-const names = new Set(['sess_guid', 'a95b4b6', 'd4a79ec', '159e76e']);
+const names = new Set(['a95b4b6', 'd4a79ec', '159e76e']);
 
 const parsed = cookie
   .split(';')
