@@ -5,7 +5,6 @@ import { GraphQLClient } from 'graphql-request';
 
 // internal utility types
 type ExpectedCookies = {
-  sess_guid?: string;
   a95b4b6?: string;
   d4a79ec?: string;
   '159e76e'?: string;
@@ -34,12 +33,6 @@ export class WebSessionAuth implements WebAuth {
    */
   private lookupId: string;
   /**
-   * sess_guid cookie
-   *
-   * derived session identifier, this is not sensitive and is logged in sentry
-   */
-  private sessionGuid: string;
-  /**
    * d4a79ec cookie
    *
    * direct session identifier, Do not expose this unless being used for auth.
@@ -56,7 +49,6 @@ export class WebSessionAuth implements WebAuth {
     cookies: NonNullable<ExpectedCookies>,
     headers: NonNullable<ExpectedHeaders>
   ) {
-    this.sessionGuid = cookies.sess_guid;
     this.encodedUserIdentifier = cookies.a95b4b6;
     this.sessionIdentifier = cookies.d4a79ec;
     this.lookupId = cookies['159e76e'];
@@ -75,7 +67,6 @@ export class WebSessionAuth implements WebAuth {
     // ensure expected headers and cookies are present and non-empty
     if (
       !requestHeaders.cookie ||
-      !requestCookies.sess_guid ||
       !requestCookies.a95b4b6 ||
       !requestCookies.d4a79ec ||
       !requestCookies['159e76e']
@@ -93,7 +84,6 @@ export class WebSessionAuth implements WebAuth {
    */
   sentryTags(): Record<string, string> {
     return {
-      session: this.sessionGuid,
       user: this.encodedUserIdentifier,
     };
   }

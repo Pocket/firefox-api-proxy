@@ -18,8 +18,13 @@ app.get('/anything', (req: express.Request, res: express.Response) => {
   res.status(200).json({ yay: true });
 });
 
-const headers = {
+// both query param and header are permitted, but query param
+// is preferred
+const query = {
   consumer_key: 'someConsumerKey',
+};
+const headers = {
+  consumer_key: 'someOtherConsumerKey',
 };
 
 describe('ConsumerKeyHandler', () => {
@@ -54,11 +59,30 @@ describe('ConsumerKeyHandler', () => {
   });
 
   describe('happy path', () => {
-    it('populates consumer_key on express Request if present', async () => {
+    it('populates consumer_key on express Request if provided via headers', async () => {
       const res = await request(app).get('/anything').set(headers).send();
 
       expect(res.status).toEqual(200);
       expect(consumer_key).toEqual(headers.consumer_key);
+    });
+    it('populates consumer_key on express Request if provided via query params', async () => {
+      const res = await request(app)
+        .get(`/anything?consumer_key=${query.consumer_key}`)
+        .send();
+
+      expect(res.status).toEqual(200);
+      expect(consumer_key).toEqual(query.consumer_key);
+    });
+    it('prefers query params if both are present', async () => {
+      const res = await request(app)
+        .get(`/anything?consumer_key=${query.consumer_key}`)
+        .set({
+          ...headers,
+        })
+        .send();
+
+      expect(res.status).toEqual(200);
+      expect(consumer_key).toEqual(query.consumer_key);
     });
   });
 });

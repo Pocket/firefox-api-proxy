@@ -11,15 +11,21 @@ import { BFFFxError } from '../bfffxError';
 type ExpectedHeaders = {
   consumer_key?: string;
 };
+type ExpectedQueryParams = {
+  consumer_key?: string;
+};
 
 const ConsumerKeyHandler = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
+  // both query param and header are permitted, but query param
+  // is preferred
   const requestHeaders: ExpectedHeaders = req.headers as ExpectedHeaders;
+  const requestQuery: ExpectedQueryParams = req.query as ExpectedQueryParams;
 
-  if (!requestHeaders.consumer_key) {
+  if (!requestQuery.consumer_key && !requestHeaders.consumer_key) {
     const error = new BFFFxError('request rejected, consumer_key is required', {
       status: 401,
       jsonResponse: {
@@ -37,7 +43,7 @@ const ConsumerKeyHandler = (
     next(error);
   }
 
-  req.consumer_key = requestHeaders.consumer_key;
+  req.consumer_key = requestQuery.consumer_key ?? requestHeaders.consumer_key;
   next();
 };
 

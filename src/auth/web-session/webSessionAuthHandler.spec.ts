@@ -31,7 +31,6 @@ app.use(ErrorHandler());
 
 describe('WebSessionAuthHandler', () => {
   const cookies = {
-    sess_guid: 'tag appropriate session identifier',
     a95b4b6: 'tag appropriate user identifier',
     d4a79ec: 'secret session identifier',
     '159e76e': 'secret lookup identifier',
@@ -53,10 +52,10 @@ describe('WebSessionAuthHandler', () => {
   });
 
   describe('unhappy path', () => {
-    it('returns 401 status error if auth fails to initialize', async () => {
-      // remove sess_guid
+    it('returns 401 status error if no a95b4b6 is present', async () => {
+      // remove a95b4b6
       const requestCookies = { ...cookies };
-      delete requestCookies.sess_guid;
+      delete requestCookies.a95b4b6;
 
       const res = await request(app)
         .get('/authenticated')
@@ -93,7 +92,6 @@ describe('WebSessionAuthHandler', () => {
       expect(res.status).toEqual(200);
       expect(auth).toBeInstanceOf(WebSessionAuth);
       expect(sentryTags).toEqual({
-        session: 'tag appropriate session identifier',
         user: 'tag appropriate user identifier',
       });
     });

@@ -7,7 +7,6 @@ describe('WebSessionAuth', () => {
   let mockRequest: Partial<Request>;
 
   const cookies = {
-    sess_guid: 'tag appropriate session identifier',
     a95b4b6: 'tag appropriate user identifier',
     d4a79ec: 'secret session identifier',
     '159e76e': 'secret lookup identifier',
@@ -28,13 +27,6 @@ describe('WebSessionAuth', () => {
   });
 
   describe('fromRequest', () => {
-    it('returns null if no sess_guid', () => {
-      delete mockRequest.cookies.sess_guid;
-      const wsAuth = WebSessionAuth.fromRequest(mockRequest as Request);
-
-      expect(wsAuth).toBeNull();
-    });
-
     it('returns null if no a95b4b6', () => {
       delete mockRequest.cookies.a95b4b6;
       const wsAuth = WebSessionAuth.fromRequest(mockRequest as Request);
@@ -80,7 +72,6 @@ describe('WebSessionAuth', () => {
       const tags = wsAuth.sentryTags();
       // deep equality check, do not allow extras
       expect(tags).toEqual({
-        session: 'tag appropriate session identifier',
         user: 'tag appropriate user identifier',
       });
     });
