@@ -1,9 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
 import { WebSessionAuth } from './webSessionAuth';
-import { components } from '../../generated/openapi/types';
-
-type ErrorResponse = components['schemas']['ErrorResponse'];
+import { BFFFxError } from '../../bfffxError';
 
 /**
  * This is an authentication middleware for the WebSession auth type.
@@ -28,23 +26,32 @@ const WebSessionAuthHandler = (
 ): void => {
   const wsAuth = WebSessionAuth.fromRequest(req);
 
-  // if wsAuth is null, construct an unauthenticated ErrorResponse.
+  // if wsAuth is null, build an error response
   if (!wsAuth) {
-    res.status(401).json({
-      errors: [
-        {
-          // If you are finding this code via this ID, the request is
-          // failing because it is not completely authenticated.
-          id: 'cd7495a6-8223-4bb8-a0a9-408be68f7967',
-          status: '401',
-          title: 'Unauthorized',
+    const error = new BFFFxError(
+      'request rejected, could not initialize auth',
+      {
+        status: 401,
+        jsonResponse: {
+          errors: [
+            {
+              // If you are finding this code via this ID, the request is
+              // failing because it is not completely authenticated.
+              id: 'cd7495a6-8223-4bb8-a0a9-408be68f7967',
+              status: '401',
+              title: 'Unauthorized',
+            },
+          ],
         },
-      ],
-    } as ErrorResponse);
-    return;
+      }
+    );
+
+    next(error);
   }
 
+  // attach auth an auth sentry tags to request
   req.auth = wsAuth as WebSessionAuth;
+  Object.assign(req.sentryTags, wsAuth.sentryTags());
   next();
 };
 

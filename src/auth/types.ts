@@ -15,11 +15,12 @@ export abstract class WebAuth {
    */
   abstract readonly __typename: string;
   /**
-   * Generate an anonymized user / session identifier.
+   * Extract any tag appropriate data from auth.
    *
-   * These identifiers should only be sent to sentry or used internally.
+   * This data is intended to be sent to sentry or logged in logs.
+   * Avoid PII, and avoid any data that functions as auth.
    */
-  abstract sentryTags(): Promise<Record<string, string>>;
+  abstract sentryTags(): Record<string, string>;
   /**
    * Authenticates a GraphQLClient by mutating the client passed to this
    * method directly. Authenticated clients are sensitive and must be

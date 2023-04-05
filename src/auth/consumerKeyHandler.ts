@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { components } from '../generated/openapi/types';
-
-type ErrorResponse = components['schemas']['ErrorResponse'];
+import { BFFFxError } from '../bfffxError';
 
 /**
  * client_key is populated to the request separately from auth to support
@@ -28,18 +26,21 @@ const ConsumerKeyHandler = (
   const requestQuery: ExpectedQueryParams = req.query as ExpectedQueryParams;
 
   if (!requestQuery.consumer_key && !requestHeaders.consumer_key) {
-    res.status(401).json({
-      errors: [
-        {
-          // If you are finding this code via this ID, the request is
-          // failing because it does not include a consumer_key
-          id: '810b0a84-d01f-49f0-8f56-962ff390c1f3',
-          status: '401',
-          title: 'Unauthorized',
-        },
-      ],
-    } as ErrorResponse);
-    return;
+    const error = new BFFFxError('request rejected, consumer_key is required', {
+      status: 401,
+      jsonResponse: {
+        errors: [
+          {
+            // If you are finding this code via this ID, the request is
+            // failing because it does not include a consumer_key
+            id: '810b0a84-d01f-49f0-8f56-962ff390c1f3',
+            status: '401',
+            title: 'Unauthorized',
+          },
+        ],
+      },
+    });
+    next(error);
   }
 
   req.consumer_key = requestQuery.consumer_key ?? requestHeaders.consumer_key;

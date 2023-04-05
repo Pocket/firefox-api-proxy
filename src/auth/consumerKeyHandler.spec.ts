@@ -3,11 +3,13 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 
 import ConsumerKeyHandler from './consumerKeyHandler';
+import { ErrorHandler } from '../errors/handlers/errorHandler';
 
 // set up required express middlewares
 const app = express();
 app.use(cookieParser());
 app.use(ConsumerKeyHandler);
+app.use(ErrorHandler());
 
 let consumer_key: string;
 

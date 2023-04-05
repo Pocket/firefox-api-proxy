@@ -1,30 +1,33 @@
-import express, { Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 const router = express.Router();
-import * as Sentry from '@sentry/node';
 
 import WebSessionAuthHandler from '../../../auth/web-session/webSessionAuthHandler';
 import recentSaves from '../../../graphql-proxy/recent-saves/recent-saves';
 import { handleQueryParameters } from './inputs';
 import { responseTransformer } from './response';
-import { components, paths } from '../../../generated/openapi/types';
+import { paths } from '../../../generated/openapi/types';
 import { RecentSavesQueryVariables } from '../../../generated/graphql/types';
+import { APIErrorResponse, BFFFxError } from '../../../bfffxError';
+import ConsumerKeyHandler from '../../../auth/consumerKeyHandler';
+import { parseGraphQLErrorMessage } from '../../../graphql-proxy/lib/util';
+import { Logger, buildLogTags } from '../../../logger';
 
 type RecentSavesResponse =
   paths['/desktop/v1/recent-saves']['get']['responses']['200']['content']['application/json'];
 
-type APIErrorResponse = components['schemas']['ErrorResponse'];
-
-router
-  // User must be authenticated via WebSession
-  .use(WebSessionAuthHandler)
+router.get(
   // getRecentSaves v1
-  .get('/v1/recent-saves', async (req: Request, res: Response) => {
+  '/v1/recent-saves',
+  // request must include a consumer_key
+  ConsumerKeyHandler,
+  // request must be authenticated via WebSession
+  WebSessionAuthHandler,
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const variables = handleQueryParameters(req.query);
 
-      if ((variables as APIErrorResponse).errors) {
-        res.status(400).json(variables);
-        return;
+      if (variables instanceof BFFFxError) {
+        next(variables);
       }
 
       const graphRes = await recentSaves(
@@ -35,9 +38,15 @@ router
 
       res.json(responseTransformer(graphRes) as RecentSavesResponse);
     } catch (error) {
-      // this catch only handles unexpected errors
-      // capture error in sentry
-      Sentry.captureException(error);
+      // attempt to extract error message
+      const errorMessage = `/desktop/recent-saves: Unexpected upstream GraphQL error: ${parseGraphQLErrorMessage(
+        error
+      )}`;
+      // log error to cloudwatch
+      const log = Logger(errorMessage);
+      log.addTags(buildLogTags(req));
+      log.addOriginalError(error);
+      log.error();
       // send anonymized error to the client
       const errorResponse: APIErrorResponse = {
         errors: [
@@ -52,9 +61,14 @@ router
           },
         ],
       };
-      res.status(500).json(errorResponse);
-      return;
+      next(
+        new BFFFxError(errorMessage, {
+          status: 500,
+          jsonResponse: errorResponse,
+        })
+      );
     }
-  });
+  }
+);
 
 export default router;

@@ -7,9 +7,9 @@ describe('WebSessionAuth', () => {
   let mockRequest: Partial<Request>;
 
   const cookies = {
-    a95b4b6: 'someCookie2',
-    d4a79ec: 'someCookie3',
-    '159e76e': 'someCookie4',
+    a95b4b6: 'tag appropriate user identifier',
+    d4a79ec: 'secret session identifier',
+    '159e76e': 'secret lookup identifier',
   };
   const headers = {
     cookie: Object.entries(cookies)
@@ -65,12 +65,15 @@ describe('WebSessionAuth', () => {
   });
 
   describe('sentryTags', () => {
-    // TODO more tests with implementation
-    it('throws not implemented error', async () => {
+    it('returns only data appropriate for sentry tags', () => {
       const wsAuth = WebSessionAuth.fromRequest(mockRequest as Request);
 
       expect(wsAuth).toBeInstanceOf(WebSessionAuth);
-      await expect(wsAuth.sentryTags()).rejects.toThrow('not implemented');
+      const tags = wsAuth.sentryTags();
+      // deep equality check, do not allow extras
+      expect(tags).toEqual({
+        user: 'tag appropriate user identifier',
+      });
     });
   });
 
