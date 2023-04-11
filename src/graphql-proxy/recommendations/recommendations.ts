@@ -22,7 +22,7 @@ export type RecommendationsParameters =
  * This client does not validate inputs. It is expected that route handlers will
  * validate and transform any URL parameters, query parameters, and payloads.
  */
-const recommendations = async ({
+const Recommendations = async ({
   auth,
   consumer_key,
   forwardHeadersMiddleware,
@@ -37,4 +37,4 @@ const recommendations = async ({
   );
 };
 
-export default recommendations;
+export default Recommendations;
