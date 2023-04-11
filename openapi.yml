@@ -39,6 +39,9 @@ components:
             parameters:
               type: string
               description: String indicating which URI query parameter caused the error
+            graphQLError:
+              type: string
+              description: An upstream GraphQLError. These are intended for human consumption. The upstream graph is not expected to provide a stable API for these, and they will change without warning. Do not parse these in Firefox.
     ErrorResponse:
       type: object
       required:
@@ -265,9 +268,17 @@ paths:
         '500':
           description: This proxy service encountered an unexpected error.
         '502':
-          description: Services downstream from this proxy encountered an unexpected error. Invalid (expired) auth returns a 500 error in downstream services, so unfortunately this is also currently a 502 response as it cannot be differentiated.
+          description: Services downstream from this proxy encountered an unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '504':
           description: Requests to downstream services timed out.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /desktop/v1/recent-saves:
     get:
       summary: Gets a list of the most recent saves for a specific user
@@ -325,6 +336,14 @@ paths:
         '500':
           description: This proxy service encountered an unexpected error.
         '502':
-          description: Services downstream from this proxy encountered an unexpected error. Invalid (expired) auth returns a 500 error in downstream services, so unfortunately this is also currently a 502 response as it cannot be differentiated.
+          description: Services downstream from this proxy encountered an unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '504':
           description: Requests to downstream services timed out.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"

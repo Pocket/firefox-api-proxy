@@ -33,13 +33,16 @@ describe('response', () => {
   describe('responseTransformer', () => {
     it('handles happy path results', async () => {
       // the default mock is happy path, ensure this is handled.
-      const graphResponse = await RecentSaves(
-        // auth and consumerKey parameters are unimportant to this mock test
-        { junk: 'junk' } as unknown as WebAuth,
-        'junkConsumerKey',
-        { pagination: { first: 20 } } // all default params are fine
-      );
-      const res = responseTransformer(graphResponse);
+      const graphResponse = await RecentSaves({
+        // auth components and middlewares are unimportant to mocks,
+        // just mock them
+        auth: { junk: 'junk' } as unknown as WebAuth,
+        consumer_key: 'junkConsumerKey',
+        forwardHeadersMiddleware: () => null,
+        // provide real variables
+        variables: { pagination: { first: 20 } },
+      });
+      const res = responseTransformer(graphResponse as RecentSavesQuery);
       const valid = validate(res);
       if (valid) {
         // any additional expectations can be defined here

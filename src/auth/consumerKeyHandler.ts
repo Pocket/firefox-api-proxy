@@ -25,6 +25,10 @@ const ConsumerKeyHandler = (
   const requestHeaders: ExpectedHeaders = req.headers as ExpectedHeaders;
   const requestQuery: ExpectedQueryParams = req.query as ExpectedQueryParams;
 
+  // TODO: remove this check once we have an error we can handle coming from
+  // the web repo for this case, and the error is handled.
+  // Currently this error case returns an empty string error message.
+  // this can also be transitioned to a `/desktop` middleware once this is complete.
   if (!requestQuery.consumer_key && !requestHeaders.consumer_key) {
     const error = new BFFFxError('request rejected, consumer_key is required', {
       status: 401,

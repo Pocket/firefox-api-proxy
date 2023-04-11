@@ -1,11 +1,17 @@
 import { webProxyClient } from '../lib/client';
-import { consumer_key } from '../../auth/types';
 
 import {
   RecommendationsDocument,
   RecommendationsQuery,
   RecommendationsQueryVariables,
 } from '../../generated/graphql/types';
+import { ClientParameters } from '../types';
+
+/**
+ * recommendations.ts GraphQL client request parameters
+ */
+export type RecommendationsParameters =
+  ClientParameters<RecommendationsQueryVariables>;
 
 /**
  * This client performs the query specified in Recommendations.graphql, utilizing
@@ -16,18 +22,15 @@ import {
  * This client does not validate inputs. It is expected that route handlers will
  * validate and transform any URL parameters, query parameters, and payloads.
  */
-const recommendations = async (
-  variables: RecommendationsQueryVariables,
-  consumerKey: consumer_key
-): Promise<RecommendationsQuery> => {
-  const client = webProxyClient(consumerKey);
+const recommendations = async ({
+  auth,
+  consumer_key,
+  forwardHeadersMiddleware,
+  variables,
+}: RecommendationsParameters) => {
+  const client = webProxyClient(consumer_key, forwardHeadersMiddleware);
+  auth.authenticateClient(client);
 
-  /*
-    TODO: potential improvements:
-    - Error handling. Errors that are not 500 errors specific to this request
-      should be handled here as they are implemented in the graph and discovered
-      via sentry.
-  */
   return client.request<RecommendationsQuery, RecommendationsQueryVariables>(
     RecommendationsDocument,
     variables

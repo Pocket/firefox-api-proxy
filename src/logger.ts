@@ -1,4 +1,6 @@
 import { Request } from 'express';
+import { ServerOptions } from './server';
+import { BFFFxError } from './bfffxError';
 
 /**
  * This is a placeholder. It sounds like people have been looking into
@@ -11,8 +13,8 @@ import { Request } from 'express';
  * log helper, extracts tags from express request.
  * @param req express request
  */
-export const buildLogTags = (req: Request): Record<string, string> => {
-  const authTags: Record<string, string> | undefined = req.auth?.sentryTags();
+export const buildLogTags = (req: Request) => {
+  const authTags: Record<string, string> | undefined = req.auth?.userTags();
   const expressTags: Record<string, string> = {
     method: req.method,
     path: req.path,
@@ -20,7 +22,9 @@ export const buildLogTags = (req: Request): Record<string, string> => {
   };
 
   return {
-    ...authTags,
+    user: {
+      ...authTags,
+    },
     ...expressTags,
   };
 };
@@ -49,9 +53,9 @@ export const Logger = (message) => {
      * Adds a set of tags to the log. Repeated tag names will overwrite existing
      * tags if provided multiple times.
      *
-     * @param tags flat object, tags will be attached to log for search purposes
+     * @param tags
      */
-    addTags: (tags: Record<string, string>) => {
+    addTags: (tags: Record<string, any>) => {
       Object.assign(logTags, tags);
     },
     /**
@@ -60,19 +64,30 @@ export const Logger = (message) => {
      *
      * @param error error or error string
      */
-    addOriginalError: (error: Error | string) => {
-      // may be a graphql error string, or an error, attach error
-      // components if available, otherwise just JSON.stringify to
-      // try to capture whatever is available.
-      const message = (error as Error)?.message ?? JSON.stringify(error);
-      const name = (error as Error)?.name;
-      const stack = (error as Error)?.stack;
+    addOriginalError: (error: Error) => {
+      if (error instanceof BFFFxError) {
+        // just log the string response, all details are marked up there
+        // stack has no meaningful context as error is not produced in this
+        // service
+        const message = error.stringResponse;
+        const name = error.name;
 
-      originalError = {
-        message,
-        name,
-        stack,
-      };
+        originalError = {
+          message,
+          name,
+        };
+      } else {
+        // otherwise capture message, name, and stack opportunistically
+        const message = error?.message;
+        const name = error?.name;
+        const stack = error?.stack;
+
+        originalError = {
+          message,
+          name,
+          stack,
+        };
+      }
     },
 
     /** emit log at error level */
@@ -93,3 +108,14 @@ export const Logger = (message) => {
     },
   };
 };
+
+export const logErrorCallback: ServerOptions['errorHandlerOptions']['errorCallback'] =
+  (err, req, res) => {
+    // log all errors to cloudwatch
+    // we may need to get more selective with this, but casting
+    // a wide net for now.
+    const log = Logger(err.message);
+    log.addTags(buildLogTags(req));
+    log.addOriginalError(err);
+    log.error();
+  };

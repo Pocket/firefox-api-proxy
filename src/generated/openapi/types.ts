@@ -36,6 +36,8 @@ export interface components {
       source?: {
         /** @description String indicating which URI query parameter caused the error */
         parameters?: string;
+        /** @description An upstream GraphQLError. These are intended for human consumption. The upstream graph is not expected to provide a stable API for these, and they will change without warning. Do not parse these in Firefox. */
+        graphQLError?: string;
       };
     };
     ErrorResponse: {
@@ -139,10 +141,18 @@ export interface operations {
       };
       /** @description This proxy service encountered an unexpected error. */
       500: never;
-      /** @description Services downstream from this proxy encountered an unexpected error. Invalid (expired) auth returns a 500 error in downstream services, so unfortunately this is also currently a 502 response as it cannot be differentiated. */
-      502: never;
+      /** @description Services downstream from this proxy encountered an unexpected error. */
+      502: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Requests to downstream services timed out. */
-      504: never;
+      504: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
     };
   };
   getRecentSaves: {
@@ -176,10 +186,18 @@ export interface operations {
       };
       /** @description This proxy service encountered an unexpected error. */
       500: never;
-      /** @description Services downstream from this proxy encountered an unexpected error. Invalid (expired) auth returns a 500 error in downstream services, so unfortunately this is also currently a 502 response as it cannot be differentiated. */
-      502: never;
+      /** @description Services downstream from this proxy encountered an unexpected error. */
+      502: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Requests to downstream services timed out. */
-      504: never;
+      504: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
     };
   };
 }

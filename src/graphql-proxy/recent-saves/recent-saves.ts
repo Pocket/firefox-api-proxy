@@ -1,11 +1,16 @@
 import { webProxyClient } from '../lib/client';
-import { consumer_key, WebAuth } from '../../auth/types';
 
 import {
   RecentSavesDocument,
   RecentSavesQuery,
   RecentSavesQueryVariables,
 } from '../../generated/graphql/types';
+import { ClientParameters } from '../types';
+
+/**
+ * recent-saves.ts client request parameters
+ */
+export type RecentSavesParameters = ClientParameters<RecentSavesQueryVariables>;
 
 /**
  * This client performs the query specified in RecentSaves.graphql, utilizing
@@ -25,20 +30,15 @@ import {
  * @param auth
  * @param variables
  */
-const recentSaves = async (
-  auth: WebAuth,
-  consumerKey: consumer_key,
-  variables: RecentSavesQueryVariables
-): Promise<RecentSavesQuery> => {
-  const client = webProxyClient(consumerKey);
+const recentSaves = async ({
+  auth,
+  consumer_key,
+  forwardHeadersMiddleware,
+  variables,
+}: RecentSavesParameters) => {
+  const client = webProxyClient(consumer_key, forwardHeadersMiddleware);
   auth.authenticateClient(client);
 
-  /*
-    TODO: potential improvements:
-    - Error handling. Errors that are not 500 errors specific to this request
-      should be handled here as they are implemented in the graph and discovered
-      via sentry.
-  */
   return client.request<RecentSavesQuery, RecentSavesQueryVariables>(
     RecentSavesDocument,
     variables

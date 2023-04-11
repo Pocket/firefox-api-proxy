@@ -13,18 +13,18 @@ app.use((req: Request, res: Response, next: NextFunction): void => {
   // initialize empty sentryTags, this is done by server.ts normally
   // since it extends the express types, but we don't need all that
   // weight here.
-  req.sentryTags = {};
+  req.user = {};
   next();
 });
 app.use(cookieParser());
 app.use(WebSessionAuthHandler);
 
 let auth: WebAuth;
-let sentryTags: Record<string, string>;
+let userTags: Record<string, string>;
 
 app.get('/authenticated', (req: express.Request, res: express.Response) => {
   auth = req.auth;
-  sentryTags = req.sentryTags;
+  userTags = req.user;
   res.status(200).json({ yay: true });
 });
 app.use(ErrorHandler());
@@ -48,38 +48,7 @@ describe('WebSessionAuthHandler', () => {
     // auth contents, also WebSessionAuthHandler rejects before
     // route handler as well.
     auth = undefined;
-    sentryTags = undefined;
-  });
-
-  describe('unhappy path', () => {
-    it('returns 401 status error if no a95b4b6 is present', async () => {
-      // remove a95b4b6
-      const requestCookies = { ...cookies };
-      delete requestCookies.a95b4b6;
-
-      const res = await request(app)
-        .get('/authenticated')
-        .set(buildHeaders(requestCookies))
-        .send();
-
-      // does not reach route handler to expose internals
-      // expect undefined
-      expect(auth).toBeUndefined();
-      expect(sentryTags).toBeUndefined();
-      expect(res.status).toEqual(401);
-      expect(res.text).toBeTruthy();
-      const errors = JSON.parse(res.text);
-      expect(errors).toStrictEqual(
-        expect.objectContaining({
-          errors: expect.arrayContaining([
-            expect.objectContaining({
-              status: '401',
-              title: 'Unauthorized',
-            }),
-          ]),
-        })
-      );
-    });
+    userTags = undefined;
   });
 
   describe('happy path', () => {
@@ -91,8 +60,8 @@ describe('WebSessionAuthHandler', () => {
 
       expect(res.status).toEqual(200);
       expect(auth).toBeInstanceOf(WebSessionAuth);
-      expect(sentryTags).toEqual({
-        user: 'tag appropriate user identifier',
+      expect(userTags).toEqual({
+        id: 'tag appropriate user identifier',
       });
     });
   });

@@ -5,14 +5,11 @@
  */
 
 import { faker } from '@faker-js/faker';
-import { consumer_key } from '../../../auth/types';
 
 import common from '../../__mocks__/common';
 
-import {
-  RecommendationsQuery,
-  RecommendationsQueryVariables,
-} from '../../../generated/graphql/types';
+import { RecommendationsQuery } from '../../../generated/graphql/types';
+import { RecommendationsParameters } from '../recommendations';
 
 /**
  * faker locales do not match our own, map ours to faker locales
@@ -46,10 +43,12 @@ const fakeRecommendations = (
     }));
 };
 
-const recommendations = async (
-  variables: RecommendationsQueryVariables,
-  consumerKey: consumer_key
-): Promise<RecommendationsQuery> => {
+const recommendations = async ({
+  auth,
+  consumer_key,
+  forwardHeadersMiddleware,
+  variables,
+}: RecommendationsParameters): Promise<RecommendationsQuery> => {
   // set faker locale based on variables
   // default to english if unrecognized, roughly matches graph behavior selecting locale.
   const fakerLocale = fakerLocales[variables.locale.toLowerCase()] ?? 'en';

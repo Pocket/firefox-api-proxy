@@ -255,7 +255,13 @@ export enum CorpusLanguage {
   /** German */
   De = 'DE',
   /** English */
-  En = 'EN'
+  En = 'EN',
+  /** Spanish */
+  Es = 'ES',
+  /** French */
+  Fr = 'FR',
+  /** Italian */
+  It = 'IT'
 }
 
 export type CorpusRecommendation = {
@@ -270,7 +276,7 @@ export type CorpusRecommendation = {
    * Firefox clients require an integer id. Other clients should use `id` instead of this field. tileId uniquely identifies the ScheduledSurface, CorpusItem, and scheduled_date. tileId is greater than 0 and less than 2^53 to fit in a Javascript number (64-bit IEEE 754 float). The field type is a Float because a GraphQL Int is limited to 32 bit.
    * @deprecated Only to be used by Firefox. Other clients should use `id`. We plan to also migrate Firefox New Tab to use CorpusRecommendation.id instead of tileId to track recommendation telemetry.
    */
-  tileId?: Maybe<Scalars['Float']>;
+  tileId: Scalars['Float'];
 };
 
 /** This is the same as Slate but in this type all recommendations are backed by CorpusItems. This means that the editorial team has editorial control over the items served by this endpoint. */
@@ -353,7 +359,7 @@ export type CreateShareableListItemInput = {
   authors?: InputMaybe<Scalars['String']>;
   excerpt?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['Url']>;
-  itemId?: InputMaybe<Scalars['Float']>;
+  itemId: Scalars['ID'];
   listExternalId: Scalars['ID'];
   publisher?: InputMaybe<Scalars['String']>;
   sortOrder: Scalars['Int'];
@@ -366,7 +372,7 @@ export type CreateShareableListItemWithList = {
   authors?: InputMaybe<Scalars['String']>;
   excerpt?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['Url']>;
-  itemId?: InputMaybe<Scalars['Float']>;
+  itemId: Scalars['ID'];
   publisher?: InputMaybe<Scalars['String']>;
   sortOrder: Scalars['Int'];
   title?: InputMaybe<Scalars['String']>;
@@ -1681,7 +1687,7 @@ export type Recommendation = {
    */
   feedItemId?: Maybe<Scalars['ID']>;
   /** A generated id from the Data and Learning team that represents the Recommendation */
-  id?: Maybe<Scalars['ID']>;
+  id: Scalars['ID'];
   /**
    * The Recommendation entity is owned by the Recommendation API service.
    * We extend it in this service to add an extra field ('curationInfo') to the Recommendation entity.
@@ -1830,6 +1836,8 @@ export type SavedItem = RemoteEntity & {
   suggestedTags?: Maybe<Array<Tag>>;
   /** The Tags associated with this SavedItem */
   tags?: Maybe<Array<Tag>>;
+  /** The title for user saved item. Set by the user and if not, set by the parser */
+  title?: Maybe<Scalars['String']>;
   /** The url the user saved to their list */
   url: Scalars['String'];
 };
@@ -1938,6 +1946,8 @@ export type SavedItemUpsertInput = {
   isFavorite?: InputMaybe<Scalars['Boolean']>;
   /** Optional, time that request was submitted by client epoch/unix time */
   timestamp?: InputMaybe<Scalars['Int']>;
+  /** Optional, title of the SavedItem */
+  title?: InputMaybe<Scalars['String']>;
   /** The url to create/update the SavedItem with. (the url to save to the list) */
   url: Scalars['String'];
 };
@@ -2267,7 +2277,7 @@ export type ShareableListItem = {
   /** The URL of the thumbnail image illustrating the story. Supplied by the Parser. */
   imageUrl?: Maybe<Scalars['Url']>;
   /** The Parser Item ID. */
-  itemId?: Maybe<Scalars['Float']>;
+  itemId: Scalars['ID'];
   /** The name of the publisher for this story. Supplied by the Parser. */
   publisher?: Maybe<Scalars['String']>;
   /** The custom sort order of stories within a list. Defaults to 1. */
@@ -2660,12 +2670,18 @@ export type UpdateUserRecommendationPreferencesInput = {
 /** Resolve by reference the User entity in this graph to provide user data with public lists. */
 export type User = {
   __typename?: 'User';
+  /** Timestamp of the date when account was created */
+  accountCreationDate?: Maybe<Scalars['ISOString']>;
   /** The public avatar url for the user */
   avatarUrl?: Maybe<Scalars['String']>;
   /** A users bio for their profile */
   description?: Maybe<Scalars['String']>;
+  /** The users first name */
+  firstName?: Maybe<Scalars['String']>;
   /** The user's premium status */
   isPremium?: Maybe<Scalars['Boolean']>;
+  /** The users last name */
+  lastName?: Maybe<Scalars['String']>;
   /** The users first name and last name combined */
   name?: Maybe<Scalars['String']>;
   /** Preferences for recommendations that the user has explicitly set. */
@@ -2800,7 +2816,7 @@ export type RecommendationsQueryVariables = Exact<{
 }>;
 
 
-export type RecommendationsQuery = { __typename?: 'Query', newTabSlate: { __typename?: 'CorpusSlate', recommendations: Array<{ __typename?: 'CorpusRecommendation', tileId?: number | null, corpusItem: { __typename?: 'CorpusItem', excerpt: string, imageUrl: any, publisher: string, title: string, url: any } }> } };
+export type RecommendationsQuery = { __typename?: 'Query', newTabSlate: { __typename?: 'CorpusSlate', recommendations: Array<{ __typename?: 'CorpusRecommendation', tileId: number, corpusItem: { __typename?: 'CorpusItem', excerpt: string, imageUrl: any, publisher: string, title: string, url: any } }> } };
 
 
 export const RecentSavesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"RecentSaves"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"savedItems"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"statuses"},"value":{"kind":"ListValue","values":[{"kind":"EnumValue","value":"UNREAD"}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"sort"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"sortBy"},"value":{"kind":"EnumValue","value":"CREATED_AT"}},{"kind":"ObjectField","name":{"kind":"Name","value":"sortOrder"},"value":{"kind":"EnumValue","value":"DESC"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"item"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Item"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordCount"}},{"kind":"Field","name":{"kind":"Name","value":"topImage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}}]}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"timeToRead"}},{"kind":"Field","name":{"kind":"Name","value":"resolvedUrl"}},{"kind":"Field","name":{"kind":"Name","value":"givenUrl"}},{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"domain"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<RecentSavesQuery, RecentSavesQueryVariables>;

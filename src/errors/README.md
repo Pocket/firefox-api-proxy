@@ -22,6 +22,43 @@ make backwards compatible APIs that avoid breaking changes. If we get many servi
 consuming this code, one update to a library can automatically update every service
 that consumes it with observability improvements.
 
+## What does this provide?
+
+Express is extremely bare-bones by default, and is intended to serve all use cases (API servers,
+static content servers, full stack servers with server-side rendering, etc.).
+
+By default, most automatically provided errors (404, 500) are returned as HTML pages. This server
+replaces these automatic cases with string errors that are much more appropriate for an API server,
+and offers extensibility to replace these string errors with structured JSON errors, or just about
+any other response (see ErrorHandler and NotFoundHandler for more details). ErrorHandler also allows
+programmatic extensibility via callbacks.
+
+Additionally this provides error reporting with sentry. By default, all
+5XX errors are reported to sentry (forwarding is configurable, and
+RestResponseError provides one-off error overrides to this config).
+By default, all of the following request details are recorded along
+with sentry events:
+
+- express.req properties
+  - cookies
+  - data
+  - headers
+  - method
+  - query_string
+  - url
+- server name as programmatically discovered by express (specify in `sentry.init` if not correct!)
+- express.req.user properties (these must be populated by your service implementation):
+  - id
+  - username
+  - email
+  - (extend here if you need to support additional client specific metrics)
+- node js version
+- transaction (`${HTTP Method} ${request path}`)
+
+If you need to change these defaults (addition or redaction), utilize
+`sentryRequestHandlerOptions.include` to specify an alternate set of
+properties.
+
 ## Design goals
 
 These tools need to be able to be consumed easily. Especially if we intend
