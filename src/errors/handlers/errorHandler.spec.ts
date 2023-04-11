@@ -70,6 +70,42 @@ describe('ErrorHandler', () => {
     });
   });
 
+  describe('errorCallback', () => {
+    let handlerErr;
+    let handlerReq;
+    let handlerRes;
+    let callbackErr;
+    let callbackReq;
+    let callbackRes;
+
+    const app = express();
+    app.get(
+      '/unhandled',
+      (req: Request, res: Response, next: NextFunction): void => {
+        handlerErr = new Error('this is an unhandled error');
+        handlerReq = req;
+        handlerRes = res;
+        next(handlerErr);
+      }
+    );
+    app.use(
+      ErrorHandler({
+        errorCallback: (err: Error, req: Request, res: Response) => {
+          callbackErr = err;
+          callbackReq = req;
+          callbackRes = res;
+          return;
+        },
+      })
+    );
+    it('executes errorCallback if one is provided', async () => {
+      await request(app).get('/unhandled').send();
+      expect(handlerErr).toBe(callbackErr);
+      expect(handlerReq).toBe(callbackReq);
+      expect(handlerRes).toBe(callbackRes);
+    });
+  });
+
   describe('default default error', () => {
     // set up a smaller test server to test default handler behavior
     const app = express();

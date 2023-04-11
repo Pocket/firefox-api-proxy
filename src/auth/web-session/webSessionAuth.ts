@@ -13,7 +13,40 @@ type ExpectedHeaders = {
   cookie?: string;
 };
 
+/**
+ * The web repo closes the connection if headers are forwarded indiscriminately,
+ * this set and the function below let through any explicitly allowed headers, and
+ * any headers that begin with `x-` (application specific).
+ *
+ * As we move forward with observability improvements, ensure that any tracking
+ * headers get added here, or are permitted in doForwardHeader.
+ *
+ * Hopefully we can move this to a block-list instead, but I need to know more to
+ * get there.
+ */
+const ALLOWED_HEADERS = new Set(['authorization', 'cookie']);
+
+/**
+ * returns true if cookie is explicitly allowed or application specific
+ * @param name
+ * @returns boolean
+ */
+const doForwardHeader = (name: string): boolean => {
+  const lowerName = name.toLocaleLowerCase();
+  if (ALLOWED_HEADERS.has(lowerName)) {
+    return true;
+  }
+  if (lowerName.startsWith('x-')) {
+    return true;
+  }
+  return false;
+};
+
 export class WebSessionAuth implements WebAuth {
+  /**
+   * Capture request headers for forwarding and logging.
+   */
+  private headers: Request['headers'];
   /**
    * All of the cookie content below is required to authenticate.
    */
@@ -23,7 +56,7 @@ export class WebSessionAuth implements WebAuth {
    *
    * derived user identifier, this is not sensitive and is logged in sentry
    */
-  private encodedUserIdentifier: string;
+  private encodedUserIdentifier?: string;
   /**
    * 159e76e cookie
    *
@@ -31,13 +64,13 @@ export class WebSessionAuth implements WebAuth {
    * for lookups. This facilitates that lookup. Do not expose this
    * unless being used for auth.
    */
-  private lookupId: string;
+  private lookupId?: string;
   /**
    * d4a79ec cookie
    *
    * direct session identifier, Do not expose this unless being used for auth.
    */
-  private sessionIdentifier: string;
+  private sessionIdentifier?: string;
 
   readonly __typename = 'WebSessionAuth';
 
@@ -53,6 +86,7 @@ export class WebSessionAuth implements WebAuth {
     this.sessionIdentifier = cookies.d4a79ec;
     this.lookupId = cookies['159e76e'];
     this.cookie = headers.cookie;
+    this.headers = headers;
   }
 
   /**
@@ -61,18 +95,9 @@ export class WebSessionAuth implements WebAuth {
    * This returns an instance of WebSessionAuth on success or
    * returns null on failure.
    */
-  static fromRequest(req: Request): WebSessionAuth | null {
+  static fromRequest(req: Request): WebSessionAuth {
     const requestCookies: ExpectedCookies = req.cookies;
     const requestHeaders: ExpectedHeaders = req.headers;
-    // ensure expected headers and cookies are present and non-empty
-    if (
-      !requestHeaders.cookie ||
-      !requestCookies.a95b4b6 ||
-      !requestCookies.d4a79ec ||
-      !requestCookies['159e76e']
-    ) {
-      return null;
-    }
 
     // otherwise populate class properties with private constructor
     return new this(requestCookies, requestHeaders);
@@ -82,9 +107,9 @@ export class WebSessionAuth implements WebAuth {
    * Extracts user and session identifiers from this auth, and returns
    * them as a flat objects for use as sentry or log tags.
    */
-  sentryTags(): Record<string, string> {
+  userTags(): Record<string, string> {
     return {
-      user: this.encodedUserIdentifier,
+      id: this.encodedUserIdentifier ?? 'unauthenticated',
     };
   }
 
@@ -94,14 +119,22 @@ export class WebSessionAuth implements WebAuth {
    * Requests utilizing WebSessionAuth are authenticated via cookies
    * that are passed through this service.
    *
-   * This method attaches cookies from the original firefox-api-proxy
-   * request onto the GraphQL Request.
+   * This attaches all permitted headers to the request. See doForwardHeader
+   * for more details about "permitted".
    *
    * Authenticated clients must be treated as sensitive data, and their
    * lifecycle should be kept as short as possible.
    */
   authenticateClient(client: GraphQLClient): void {
-    client.setHeader('cookie', this.cookie);
+    Object.entries(this.headers).forEach(([key, value]) => {
+      if (doForwardHeader(key)) {
+        // express supports duplicated headers for some values, and fetch does not.
+        // for cases where the client has duplicated headers (array), just grab the
+        // first value, or pass through string if not
+        const singleValue = Array.isArray(value) ? value[0] : value;
+        client.setHeader(key, singleValue);
+      }
+    });
     return;
   }
 }

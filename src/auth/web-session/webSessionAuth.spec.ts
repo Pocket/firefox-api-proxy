@@ -17,6 +17,10 @@ describe('WebSessionAuth', () => {
         return acc + ` ${key}=${value};`;
       }, '')
       .trim(),
+    // `x-*` application specific headers get forwarded
+    'x-forward-application-header': 'forwardMe',
+    // programmatic headers do not
+    'content-type': 'application/json; charset=UTF-8',
   };
 
   beforeEach(() => {
@@ -27,28 +31,15 @@ describe('WebSessionAuth', () => {
   });
 
   describe('fromRequest', () => {
-    it('returns null if no a95b4b6', () => {
-      delete mockRequest.cookies.a95b4b6;
-      const wsAuth = WebSessionAuth.fromRequest(mockRequest as Request);
-
-      expect(wsAuth).toBeNull();
-    });
-
-    it('returns null if no d4a79ec', () => {
-      delete mockRequest.cookies.d4a79ec;
-      const wsAuth = WebSessionAuth.fromRequest(mockRequest as Request);
-
-      expect(wsAuth).toBeNull();
-    });
-
-    it('returns null if no 159e76e', () => {
-      delete mockRequest.cookies['159e76e'];
-      const wsAuth = WebSessionAuth.fromRequest(mockRequest as Request);
-
-      expect(wsAuth).toBeNull();
-    });
-
     it('returns WebSessionAuth if all auth cookies and headers are present', () => {
+      const wsAuth = WebSessionAuth.fromRequest(mockRequest as Request);
+
+      expect(wsAuth).toBeInstanceOf(WebSessionAuth);
+    });
+
+    it('does not throw an error with empty headers and cookies', () => {
+      mockRequest.headers = {};
+      mockRequest.cookies = {};
       const wsAuth = WebSessionAuth.fromRequest(mockRequest as Request);
 
       expect(wsAuth).toBeInstanceOf(WebSessionAuth);
@@ -64,21 +55,35 @@ describe('WebSessionAuth', () => {
     });
   });
 
-  describe('sentryTags', () => {
+  describe('userTags', () => {
     it('returns only data appropriate for sentry tags', () => {
       const wsAuth = WebSessionAuth.fromRequest(mockRequest as Request);
 
       expect(wsAuth).toBeInstanceOf(WebSessionAuth);
-      const tags = wsAuth.sentryTags();
+      const tags = wsAuth.userTags();
       // deep equality check, do not allow extras
       expect(tags).toEqual({
-        user: 'tag appropriate user identifier',
+        id: 'tag appropriate user identifier',
+      });
+    });
+
+    it('user.id is anonymous for unauthenticated requests', () => {
+      delete mockRequest.cookies.a95b4b6;
+      delete mockRequest.cookies.d4a79ec;
+      delete mockRequest.cookies['159e76e'];
+      const wsAuth = WebSessionAuth.fromRequest(mockRequest as Request);
+
+      expect(wsAuth).toBeInstanceOf(WebSessionAuth);
+      const tags = wsAuth.userTags();
+      // deep equality check, do not allow extras
+      expect(tags).toEqual({
+        id: 'unauthenticated',
       });
     });
   });
 
   describe('authenticateClient', () => {
-    it('sets the cookie header from the request onto GraphQLClient', () => {
+    it('sets cookie and application specific headers from the request onto GraphQLClient', () => {
       const setHeaderMock = jest.fn();
       const mockGraphQLClient = {
         setHeader: setHeaderMock,
@@ -88,8 +93,12 @@ describe('WebSessionAuth', () => {
 
       expect(wsAuth).toBeInstanceOf(WebSessionAuth);
       wsAuth.authenticateClient(mockGraphQLClient as GraphQLClient);
-      expect(setHeaderMock).toBeCalledTimes(1);
+      expect(setHeaderMock).toBeCalledTimes(2);
       expect(setHeaderMock).toBeCalledWith('cookie', headers.cookie);
+      expect(setHeaderMock).toBeCalledWith(
+        'x-forward-application-header',
+        headers['x-forward-application-header']
+      );
     });
   });
 });

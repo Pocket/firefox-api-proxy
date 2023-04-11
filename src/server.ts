@@ -15,33 +15,38 @@ import {
 } from './errors/handlers/errorHandler';
 
 /**
- * This may be a good candidate for a shared library.
+ * This is a generic API server. See BFFFxServer.ts for the configuration
+ * specific to this service, and its corresponding tests for an idea of
+ * what functionality this server base offers.
+ *
+ * This may be a good candidate for a shared library. This generic base
+ * would need test coverage similar to what's in BFFFxServer before this
+ * could be ready to pull out to a library.
  *
  * All consumers would have to write their APIs as plugins for express
  * as they are in this repo, but parts of this are useful if we want to
  * avoid boilerplate.
  */
 
-/**
- * extend express.Request with sentryTags.
- */
 declare module 'express' {
   export interface Request {
     /**
-     * sentryTags is a container for tags to associate with a sentry
-     * event. This type is added by `server.ts`, and all tags included
-     * in this flat object will be automatically be attached to sentry
-     * events when created.
+     * This interface is populated by the sentry middleware. Adding this
+     * type to express.Request for autocompletion support and to document
+     * type expectations.
      *
-     * Make this more explicit as we discover what tags we like! Specify
-     * specific names of tags, and describe the data you expect them to provide.
-     * For now, just restrict this to a flat object.
+     * This will not be present if you are not using the sentry middleware.
+     * Tests that do not include the entire middleware stack included in
+     * the pocket express server base will need to mock this.
      *
-     * `Object.assign(req.sentryTags, object2)` where object2 is an Object
-     * with multiple tags is encouraged to be used when adding multiple
-     * tags.
+     * This may be extended via sentryRequestHandlerOptions for more client
+     * specific metrics reporting.
      */
-    sentryTags: Record<string, string>;
+    user: {
+      id?: string;
+      username?: string;
+      email?: string;
+    };
   }
 }
 
@@ -60,7 +65,7 @@ type ExpressRouters = {
   router: express.Router;
 }[];
 
-type ServerOptions = {
+export type ServerOptions = {
   notFoundHandlerOptions?: NotFoundHandlerOptions;
   errorHandlerOptions?: ErrorHandlerOptions;
   sentryRequestHandlerOptions?: Sentry.Handlers.RequestHandlerOptions;
@@ -81,11 +86,7 @@ type ServerOptions = {
 };
 
 const DEFAULT_SERVER_OPTIONS: ServerOptions = {
-  sentryRequestHandlerOptions: {
-    // keys to extract from req, add sentryTags and avoid cookies
-    // that sentry probably doesn't know how to reliably redact
-    request: ['headers', 'method', 'query_string', 'url', 'data', 'sentryTags'],
-  },
+  sentryRequestHandlerOptions: {},
   sentryErrorHandlerOptions: {
     shouldHandleError: (error) => {
       if (error instanceof RestResponseError) {
@@ -120,7 +121,7 @@ const DEFAULT_SERVER_OPTIONS: ServerOptions = {
  * - aws xray support via xrayExpress (you should configure this in your project main!)
  * - A configurable 404 error, returns a non-default error for routes that don't exist.
  *   This is an API server, and the default behavior in express returns an HTML document.
- * - Sentry error reporting, attach custom tags to req.sentryTags
+ * - Sentry error reporting, attach user identifying tags to req.user
  * - A configurable default error handler, redacts all node Errors, and
  *
  * Servers returned by this are not started. GraphQL servers require
@@ -166,11 +167,12 @@ export const buildServer = (
     ) as express.RequestHandler
   );
 
-  // populate sentryTags with baseline tags
+  // populate req.user with baseline tags
   app.use((req: Request, res: Response, next: NextFunction): void => {
     // just empty for now, but room to grab anything from express here
-    // move this to an external library if it needs customization.
-    req.sentryTags = {};
+    // as we add new observability functionality (i.e. tracking ids).
+    // move to optional server config if we need customization.
+    req.user = {};
     next();
   });
 

@@ -4,11 +4,7 @@ import https from 'https';
 
 import config from './config';
 
-import API from './api';
-import { buildServer } from './server';
-import { BFFFxError } from './bfffxError';
-
-const serviceName = 'firefox-api-proxy';
+import { buildBFFFxServer } from './bfffxServer';
 
 Sentry.init({
   ...config.sentry,
@@ -30,49 +26,7 @@ AWSXRay.captureHTTPsGlobal(https, true);
 //Capture all promises that we make
 AWSXRay.capturePromise();
 
-const { app } = buildServer(
-  serviceName,
-  [
-    {
-      route: '/',
-      router: API,
-    },
-  ],
-  // BFFFx has an expected JSON error format, set these up in handlers
-  {
-    notFoundHandlerOptions: {
-      defaultError: new BFFFxError('Not Found', {
-        status: 404,
-        jsonResponse: {
-          errors: [
-            {
-              // this route doesn't exist
-              id: 'a5d471c4-4d00-4300-9bb8-17d796f68a4a',
-              status: '404',
-              title: 'Not Found',
-            },
-          ],
-        },
-      }),
-    },
-    errorHandlerOptions: {
-      defaultError: new BFFFxError('Bad Implementation', {
-        status: 500,
-        jsonResponse: {
-          errors: [
-            {
-              // this shouldn't happen, open a bug if you see this id
-              // this is indicative of runtime errors.
-              id: 'a03b69b9-8a30-4b10-81c9-d8dbc7f61f50',
-              status: '500',
-              title: 'Internal Server Error',
-            },
-          ],
-        },
-      }),
-    },
-  }
-);
+const { app } = buildBFFFxServer();
 
 app.listen({ port: config.app.port }, () =>
   console.log(

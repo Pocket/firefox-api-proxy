@@ -51,7 +51,7 @@ const WebSessionAuthHandler = (
 
   // attach auth an auth sentry tags to request
   req.auth = wsAuth as WebSessionAuth;
-  Object.assign(req.sentryTags, wsAuth.sentryTags());
+  Object.assign(req.user, wsAuth.userTags());
   next();
 };
 

@@ -4,7 +4,7 @@ import { GraphQLClient } from 'graphql-request';
  * Abstract class that all auth methods must implement.
  *
  * This is being implemented this way for two reasons:
- * 1) Different authentication methods will need to set different headers.
+ * 1) Centralizing the handling of request headers for sentry / log tags.
  * 2) Acting as a closure makes misuse more obvious.
  */
 export abstract class WebAuth {
@@ -15,12 +15,12 @@ export abstract class WebAuth {
    */
   abstract readonly __typename: string;
   /**
-   * Extract any tag appropriate data from auth.
+   * Extract any user specific tag appropriate data from auth.
    *
    * This data is intended to be sent to sentry or logged in logs.
    * Avoid PII, and avoid any data that functions as auth.
    */
-  abstract sentryTags(): Record<string, string>;
+  abstract userTags(): Record<string, string>;
   /**
    * Authenticates a GraphQLClient by mutating the client passed to this
    * method directly. Authenticated clients are sensitive and must be

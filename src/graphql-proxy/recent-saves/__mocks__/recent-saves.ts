@@ -5,15 +5,14 @@
  */
 
 import { faker } from '@faker-js/faker';
-import { consumer_key, WebAuth } from '../../../auth/types';
 
 import common from '../../__mocks__/common';
 
 import {
   RecentSavesQuery,
-  RecentSavesQueryVariables,
   SavedItemStatus,
 } from '../../../generated/graphql/types';
+import { RecentSavesParameters } from '../recent-saves';
 
 const fakeSaves = (count): RecentSavesQuery['user']['savedItems']['edges'] => {
   return Array(count)
@@ -42,11 +41,12 @@ const fakeSaves = (count): RecentSavesQuery['user']['savedItems']['edges'] => {
     }));
 };
 
-const recentSaves = async (
-  auth: WebAuth,
-  consumerKey: consumer_key,
-  variables: RecentSavesQueryVariables
-): Promise<RecentSavesQuery> => {
+const recentSaves = async ({
+  auth,
+  consumer_key,
+  forwardHeadersMiddleware,
+  variables,
+}: RecentSavesParameters): Promise<RecentSavesQuery> => {
   const count =
     (variables?.pagination?.first || variables?.pagination?.last) ?? 10;
   return Promise.resolve({
