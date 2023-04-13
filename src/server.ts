@@ -173,7 +173,7 @@ export const buildServer = (
     // as we add new observability functionality (i.e. tracking ids).
     // move to optional server config if we need customization.
     req.user = {};
-    next();
+    return next();
   });
 
   app.use(cookieParser());

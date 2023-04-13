@@ -10,15 +10,15 @@ describe('ErrorHandler', () => {
     const app = express();
     app.get('/bad', (req: Request, res: Response, next: NextFunction) => {
       // return something that isn't even an error
-      next(0);
+      return next(0);
     });
     app.get('/unhandled', (req: Request, res: Response, next: NextFunction) => {
       // return a node Error
-      next(new Error('this could be an unhandled error from a library'));
+      return next(new Error('this could be an unhandled error from a library'));
     });
     app.get('/handled', (req: Request, res: Response, next: NextFunction) => {
       // return a RestResponseError
-      next(
+      return next(
         new RestResponseError('Error message for sentry', {
           status: 401,
           stringResponse: 'response for the end user',
@@ -29,7 +29,7 @@ describe('ErrorHandler', () => {
       // set a status code and response
       res.status(200);
       res.send('nice');
-      next();
+      return next();
     });
     // register error handler as terminal middleware with non default error
     app.use(
@@ -85,7 +85,7 @@ describe('ErrorHandler', () => {
         handlerErr = new Error('this is an unhandled error');
         handlerReq = req;
         handlerRes = res;
-        next(handlerErr);
+        return next(handlerErr);
       }
     );
     app.use(
@@ -112,7 +112,9 @@ describe('ErrorHandler', () => {
     app.get(
       '/unhandled',
       (req: Request, res: Response, next: NextFunction): void => {
-        next(new Error('this could be an unhandled error from a library'));
+        return next(
+          new Error('this could be an unhandled error from a library')
+        );
       }
     );
     app.use(ErrorHandler());

@@ -12,7 +12,7 @@ describe('NotFoundError', () => {
       // set a status code and response
       res.status(200);
       res.send('nice');
-      next();
+      return next();
     });
     app.use(
       NotFoundHandler({
@@ -45,7 +45,7 @@ describe('NotFoundError', () => {
       // set a status code and response
       res.status(200);
       res.send('nice');
-      next();
+      return next();
     });
     app.use(NotFoundHandler());
     app.use(ErrorHandler());

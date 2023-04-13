@@ -46,13 +46,13 @@ const WebSessionAuthHandler = (
       }
     );
 
-    next(error);
+    return next(error);
   }
 
   // attach auth an auth sentry tags to request
   req.auth = wsAuth as WebSessionAuth;
   Object.assign(req.user, wsAuth.userTags());
-  next();
+  return next();
 };
 
 export default WebSessionAuthHandler;

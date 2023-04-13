@@ -48,5 +48,5 @@ export const NotFoundHandler =
     ): void => {
       // we only arrive here if the route doesn't exist,
       // just next the configured error
-      next(defaultError);
+      return next(defaultError);
     };
