@@ -19,6 +19,11 @@ export type RecommendationsQueryParameterStrings = Partial<
   ToStringParams<RecommendationsQueryParameters>
 >;
 
+/**
+ * Locale and region are required, however they do not have defaults,
+ * and we do not know if they are present until `validate` is executed.
+ * This type captures that uncertainty.
+ */
 type PreValidatedQueryParameters = {
   count: number;
   locale?: string;
@@ -41,8 +46,17 @@ const validLocalesSet = new Set(
 // prettier config thrashes here
 // prettier-ignore
 // returns details to build error response if invalid, case insensitive
-const isValidLocale: ValidatorFunction = (locale: any) =>
-  !validLocalesSet.has(locale?.toLowerCase())
+/**
+ * Validates locales. This ensures that locale is present and
+ * contains a valid value.
+ *
+ * Returns null if valid, or returns details to build an error
+ * if invalid.
+ *
+ * @param locale
+ */
+const isValidLocale: ValidatorFunction = (locale?: string) =>
+  !validLocalesSet.has(locale?.toLowerCase?.())
     ? {
       propertyName: 'locale',
       errorDetail: `Locale must be provided. Valid locales include: ${JSON.stringify(validLocales)}`,
@@ -58,9 +72,16 @@ const validRegionsSet = new Set(
 
 // prettier config thrashes here
 // prettier-ignore
-// returns details to build error response if invalid, case insensitive
-const isValidRegion: ValidatorFunction = (region: any) =>
-  !validRegionsSet.has(region?.toLowerCase())
+/**
+ * Validates regions. This ensures that region is present and
+ * contains a valid value.
+ *
+ * Returns null if valid, or returns details to build an error
+ * if invalid.
+ * @param region
+ */
+const isValidRegion: ValidatorFunction = (region?: string) =>
+  !validRegionsSet.has(region?.toLowerCase?.())
     ? {
       propertyName: 'region',
       errorDetail: `Region must be provided. Valid regions include ${JSON.stringify(validRegions)}`,
@@ -70,7 +91,16 @@ const isValidRegion: ValidatorFunction = (region: any) =>
 // prettier config thrashes here
 // prettier-ignore
 // returns details to build error response if invalid
-const isValidCount: ValidatorFunction = (count: any) =>
+/**
+ * Validates count. This ensures that clients are requesting an
+ * appropriate number of recommendations.
+ *
+ * Returns null if valid, or returns details to build an error
+ * if invalid.
+ *
+ * @param count
+ */
+const isValidCount: ValidatorFunction = (count: number) =>
   !(count > 0 && count <= 30)
     ? {
       propertyName: 'count',
@@ -125,6 +155,8 @@ export const validate = (
       status: 400,
       jsonResponse: {
         errors: errorDetails.map((ed) => ({
+          // this id is just a static identifier for this error
+          // so developers can search for more context
           id: '82868c64-41f1-4efe-b936-cef5261d0d87',
           status: '400',
           title: 'Bad Request',
@@ -139,18 +171,6 @@ export const validate = (
   }
 
   return query as RecommendationsQueryParameters;
-};
-
-/**
- * Rest query params and GraphQL variables are the same,
- * just return same data with new type.
- */
-export const transform = (
-  query: RecommendationsQueryParameters
-): RecommendationsQueryVariables => {
-  return {
-    ...query,
-  };
 };
 
 /**
@@ -174,5 +194,5 @@ export const handleQueryParameters = (
     return maybeValid;
   }
 
-  return transform(maybeValid);
+  return maybeValid as RecommendationsQueryVariables;
 };

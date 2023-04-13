@@ -14,7 +14,7 @@ app.use((req: Request, res: Response, next: NextFunction): void => {
   // since it extends the express types, but we don't need all that
   // weight here.
   req.user = {};
-  next();
+  return next();
 });
 app.use(cookieParser());
 app.use(WebSessionAuthHandler);

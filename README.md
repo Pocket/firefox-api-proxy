@@ -74,6 +74,9 @@ Upon changing these files and generating types, the compiler and unit tests shou
 
 ## About errors in this service
 
+All errors contain an `id`. These are just random strings that you can
+search for in this repo to get more context on an error.
+
 This service needs to provide an API for **every** version of Firefox that
 ever gets deployed against this service. When a client receives a 5XX
 error response, follow these guidelines:
@@ -84,3 +87,6 @@ error response, follow these guidelines:
   - This service is equipped to handle the currently known GraphQL errors associated with its queries. When these errors are encountered, this service will forward the GraphQL error to Firefox for informational purposes, **however do not handle GraphQL errors directly in Firefox**. The graph internals may change without notice, and the names in error messages may also change without notice in turn. In this case, do one of the following:
     1. If the error includes all of the details needed to handle it, implement a new error handler in this service that transforms the error into an appropriate 4XX error. Add it to `defaultHandlers` in [GraphQLErrorHandler](./src/api/error/graphQLErrorHandler.ts) if it is an error all routes must handle. Otherwise, add it to a route specific error handler if not.
     2. If the error is too vague to handle it in this service, open a bug against the appropriate GraphQL server component. `#support-backend` can help identify the appropriate component if needed.
+
+All 5XX errors get recorded as events in sentry, and logged into
+cloudwatch with correlating tags between the two.

@@ -44,11 +44,11 @@ const ConsumerKeyHandler = (
         ],
       },
     });
-    next(error);
+    return next(error);
   }
 
   req.consumer_key = requestQuery.consumer_key ?? requestHeaders.consumer_key;
-  next();
+  return next();
 };
 
 export default ConsumerKeyHandler;

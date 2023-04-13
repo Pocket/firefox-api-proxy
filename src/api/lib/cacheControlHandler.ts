@@ -24,7 +24,7 @@ const CacheControlHandler =
       if (config.app.environment !== 'development') {
         res.set('Cache-control', cachePolicy);
       }
-      next();
+      return next();
     };
 
 export default CacheControlHandler;

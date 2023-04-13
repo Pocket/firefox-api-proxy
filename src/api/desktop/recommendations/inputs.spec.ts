@@ -6,9 +6,7 @@ import {
   handleQueryParameters,
   setDefaultsAndCoerceTypes,
   validate,
-  transform,
   RecommendationsQueryParameterStrings,
-  RecommendationsQueryParameters,
 } from './inputs';
 
 import { APIError, APIErrorResponse, BFFFxError } from '../../../bfffxError';
@@ -139,20 +137,37 @@ describe('input.ts recommendations query parameters', () => {
         })
       );
     });
-  });
 
-  describe('transform', () => {
-    it('maps QueryParameter to QueryVariable types (currently no-op)', () => {
-      const params: RecommendationsQueryParameters = {
+    it('region and locale are required', () => {
+      const res = validate({
         count: 30,
-        locale: 'fr',
-        region: 'FR',
-      };
-
-      const variables = transform(params);
-      expect(variables).toStrictEqual(
-        expect.objectContaining<RecommendationsQueryVariables>({
-          ...params,
+        // region and locale are missing
+      });
+      assert(res instanceof BFFFxError);
+      const errors = JSON.parse(res.stringResponse);
+      expect(errors).toEqual(
+        expect.objectContaining<APIErrorResponse>({
+          // array contains multiple errors, check for each
+          errors: expect.arrayContaining<Array<APIError>>([
+            expect.objectContaining<APIError>({
+              status: '400',
+              title: 'Bad Request',
+              detail:
+                'Locale must be provided. Valid locales include: ["fr","fr-FR","es","es-ES","it","it-IT"]',
+              source: {
+                parameters: 'locale',
+              },
+            }),
+            expect.objectContaining<APIError>({
+              status: '400',
+              title: 'Bad Request',
+              detail:
+                'Region must be provided. Valid regions include ["FR","ES","IT"]',
+              source: {
+                parameters: 'region',
+              },
+            }),
+          ]),
         })
       );
     });

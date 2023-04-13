@@ -18,7 +18,7 @@ router.get(
       const variables = handleQueryParameters(req.query);
 
       if (variables instanceof BFFFxError) {
-        next(variables);
+        return next(variables);
       }
 
       const graphRes = await Recommendations({
@@ -31,7 +31,7 @@ router.get(
       res.json(responseTransformer(graphRes) as RecommendationsResponse);
     } catch (error) {
       const responseError = GraphQLErrorHandler(error);
-      next(responseError);
+      return next(responseError);
     }
   }
 );
