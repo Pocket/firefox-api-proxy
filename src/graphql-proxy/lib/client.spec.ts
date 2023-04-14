@@ -60,9 +60,8 @@ describe('GraphQL Client', () => {
         {}
       );
 
-      // for this case, it is the Map interface, so 4 separate set calls due to forEach
-      // the extra 2 are content-length and content-type, which are automatic
-      expect(mockResponse.set).toBeCalledTimes(4);
+      // each header is set individually, expect 2 calls
+      expect(mockResponse.set).toBeCalledTimes(2);
       expect(mockResponse.set).toBeCalledWith(
         'multiple',
         'all headers get forwarded'
