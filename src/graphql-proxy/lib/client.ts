@@ -2,6 +2,7 @@ import { ClientError, GraphQLClient } from 'graphql-request';
 import express from 'express';
 import config from '../../config';
 import { consumer_key } from '../../auth/types';
+import { doForwardHeader } from '../../lib/headerUtils';
 
 /**
  * GraphQL Client doesn't export this type due to supporting arbitrary
@@ -84,13 +85,17 @@ export const forwardHeadersMiddleware =
         // When they are present they may be accessed like this. Guarding
         // with optional chaining to provide best effort header forwarding.
         graphResponse.response?.headers?.forEach((value, key) => {
-          expressResponse.set(key, value);
+          if (doForwardHeader(key)) {
+            expressResponse.set(key, value);
+          }
         })
       } else if (graphResponse?.headers?.forEach) {
         // cannot use instanceof operator on Response, just check for headers
         // being a map type to check for this case
         graphResponse.headers.forEach((value, key) => {
-          expressResponse.set(key, value);
+          if (doForwardHeader(key)) {
+            expressResponse.set(key, value);
+          }
         });
       } else {
         // I think all expected types are documented above, emit warning log

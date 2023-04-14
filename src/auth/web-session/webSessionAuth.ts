@@ -2,6 +2,7 @@ import { Request } from 'express';
 
 import { WebAuth } from '../types';
 import { GraphQLClient } from 'graphql-request';
+import { doForwardHeader } from '../../lib/headerUtils';
 
 // internal utility types
 type ExpectedCookies = {
@@ -11,35 +12,6 @@ type ExpectedCookies = {
 };
 type ExpectedHeaders = {
   cookie?: string;
-};
-
-/**
- * The web repo closes the connection if headers are forwarded indiscriminately,
- * this set and the function below let through any explicitly allowed headers, and
- * any headers that begin with `x-` (application specific).
- *
- * As we move forward with observability improvements, ensure that any tracking
- * headers get added here, or are permitted in doForwardHeader.
- *
- * Hopefully we can move this to a block-list instead, but I need to know more to
- * get there.
- */
-const ALLOWED_HEADERS = new Set(['authorization', 'cookie']);
-
-/**
- * returns true if cookie is explicitly allowed or application specific
- * @param name
- * @returns boolean
- */
-const doForwardHeader = (name: string): boolean => {
-  const lowerName = name.toLocaleLowerCase();
-  if (ALLOWED_HEADERS.has(lowerName)) {
-    return true;
-  }
-  if (lowerName.startsWith('x-')) {
-    return true;
-  }
-  return false;
 };
 
 export class WebSessionAuth implements WebAuth {
