@@ -300,7 +300,7 @@ class Stack extends TerraformStack {
     const mozillaOpsSourceRule = <Wafv2WebAclRule>{
       name: 'MozillaOpsSource',
       priority: 0,
-      action: [{ count: [{}] }],
+      action: { count: {} },
       statement: [
         {
           byteMatchStatement: [
