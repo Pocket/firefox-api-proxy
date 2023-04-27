@@ -5,16 +5,24 @@ import {
   RemoteBackend,
   TerraformStack,
 } from 'cdktf';
-import { AwsProvider, kms, datasources, sns } from '@cdktf/provider-aws';
+import { AwsProvider } from '@cdktf/provider-aws/lib/provider';
+import { DataAwsKmsAlias } from '@cdktf/provider-aws/lib/data-aws-kms-alias';
+import { DataAwsRegion } from '@cdktf/provider-aws/lib/data-aws-region';
+import { DataAwsCallerIdentity } from '@cdktf/provider-aws/lib/data-aws-caller-identity';
+import { DataAwsSnsTopic } from '@cdktf/provider-aws/lib/data-aws-sns-topic';
+
+import { Wafv2WebAcl } from '@cdktf/provider-aws/lib/wafv2-web-acl';
+import { Wafv2WebAclRule } from '@cdktf/provider-aws/lib/wafv2-web-acl';
+
 import { config } from './config';
 import {
   PocketALBApplication,
   PocketECSCodePipeline,
   PocketPagerDuty,
 } from '@pocket-tools/terraform-modules';
-import { PagerdutyProvider } from '@cdktf/provider-pagerduty';
-import { LocalProvider } from '@cdktf/provider-local';
-import { NullProvider } from '@cdktf/provider-null';
+import { PagerdutyProvider } from '@cdktf/provider-pagerduty/lib/provider';
+import { LocalProvider } from '@cdktf/provider-local/lib/provider';
+import { NullProvider } from '@cdktf/provider-null/lib/provider';
 import * as fs from 'fs';
 
 class Stack extends TerraformStack {
@@ -32,13 +40,14 @@ class Stack extends TerraformStack {
       workspaces: [{ prefix: `${config.name}-` }],
     });
 
-    const region = new datasources.DataAwsRegion(this, 'region');
-    const caller = new datasources.DataAwsCallerIdentity(this, 'caller');
+    const region = new DataAwsRegion(this, 'region');
+    const caller = new DataAwsCallerIdentity(this, 'caller');
 
     const pocketApp = this.createPocketAlbApplication({
       pagerDuty: this.createPagerDuty(),
       secretsManagerKmsAlias: this.getSecretsManagerKmsAlias(),
       snsTopic: this.getCodeDeploySnsTopic(),
+      wafAcl: this.createWafAcl(),
       region,
       caller,
     });
@@ -51,7 +60,7 @@ class Stack extends TerraformStack {
    * @private
    */
   private getCodeDeploySnsTopic() {
-    return new sns.DataAwsSnsTopic(this, 'backend_notifications', {
+    return new DataAwsSnsTopic(this, 'backend_notifications', {
       name: `Backend-${config.environment}-ChatBot`,
     });
   }
@@ -61,7 +70,7 @@ class Stack extends TerraformStack {
    * @private
    */
   private getSecretsManagerKmsAlias() {
-    return new kms.DataAwsKmsAlias(this, 'kms_alias', {
+    return new DataAwsKmsAlias(this, 'kms_alias', {
       name: 'alias/aws/secretsmanager',
     });
   }
@@ -118,10 +127,11 @@ class Stack extends TerraformStack {
 
   private createPocketAlbApplication(dependencies: {
     pagerDuty: PocketPagerDuty;
-    region: datasources.DataAwsRegion;
-    caller: datasources.DataAwsCallerIdentity;
-    secretsManagerKmsAlias: kms.DataAwsKmsAlias;
-    snsTopic: sns.DataAwsSnsTopic;
+    region: DataAwsRegion;
+    caller: DataAwsCallerIdentity;
+    secretsManagerKmsAlias: DataAwsKmsAlias;
+    snsTopic: DataAwsSnsTopic;
+    wafAcl: Wafv2WebAcl;
   }): PocketALBApplication {
     const {
       //  pagerDuty, // enable if necessary
@@ -129,6 +139,7 @@ class Stack extends TerraformStack {
       caller,
       secretsManagerKmsAlias,
       snsTopic,
+      wafAcl,
     } = dependencies;
 
     return new PocketALBApplication(this, 'application', {
@@ -236,6 +247,9 @@ class Stack extends TerraformStack {
         taskExecutionDefaultAttachmentArn:
           'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy',
       },
+      wafConfig: {
+        aclArn: wafAcl.arn,
+      },
       autoscalingConfig: {
         targetMinCapacity: 2,
         targetMaxCapacity: 10,
@@ -249,6 +263,114 @@ class Stack extends TerraformStack {
           actions: config.isDev ? [] : [],
         },
       },
+    });
+  }
+
+  /**
+   * Create an AWS WAF ACL and return it.
+   *
+   * This is a very permissive first pass. Some high level limits are lifted
+   * from dotcom gateway, as it handles the current new-tab traffic, but it
+   * also handles a lot of other traffic. I expect this to need iteration
+   * once firefox stable starts consuming this service and we get a real
+   * idea of usage numbers.
+   *
+   * Please see individual rules descriptions for behavior details, and
+   * ideas for potential next steps.
+   *
+   * @private
+   */
+  private createWafAcl() {
+    /* 
+    Rule 0: MozillaOpsSource
+
+    Requests originating from Mozilla hosted Google CDNs include the following headers:
+    - `x-source`: `mozilla`
+    - `x-forwarded-for`: <end client IP address>
+
+    For now, allow all traffic with `x-source`: `mozilla` to bypass the WAF.
+    If needed, this can be tightened down several different ways:
+
+    1. Add a Wafv2WebAclRuleStatementRateBasedStatement based on `x-forwarded-for`
+       and block requests over a request limit. See docs here for details on this:
+       https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based.html
+    2. Block or limit requests from `consumer_key`s that are not firefox.
+    3. Make x-source a shared secret with SRE?
+    */
+    const mozillaOpsSourceRule = <Wafv2WebAclRule>{
+      name: 'MozillaOpsSource',
+      priority: 0,
+      action: [{ count: [{}] }],
+      statement: [
+        {
+          byteMatchStatement: [
+            {
+              searchString: 'mozilla',
+              fieldToMatch: [
+                {
+                  singleHeader: [
+                    {
+                      name: 'x-source',
+                    },
+                  ],
+                },
+              ],
+              textTransformation: [
+                {
+                  priority: 0,
+                  type: 'LOWERCASE',
+                },
+              ],
+              positionalConstraint: 'EXACTLY',
+            },
+          ],
+        },
+      ],
+      visibilityConfig: {
+        cloudwatchMetricsEnabled: true,
+        metricName: 'MozillaOpsSource',
+        sampledRequestsEnabled: true,
+      },
+    };
+
+    /*
+    Rule 1: Global Rate Limit
+
+    This service is exposed to the public internet due to not having a VPC between
+    AWS and GCP. Leaving this limit relatively permissive to allow devs and testing
+    infrastructure to hit firefox-api-proxy directly bypassing caching.
+
+    If needed, this limit can be decreased. All firefox client traffic should be though
+    the CDN soon (still a nightly release hitting this service directly floating around).
+    */
+    const globalRateLimitRule = <Wafv2WebAclRule>{
+      name: 'GlobalRateLimit',
+      priority: 1,
+      action: { block: {} },
+      statement: {
+        rateBasedStatement: {
+          limit: 1000,
+          aggregateKeyType: 'IP',
+        },
+      },
+      visibilityConfig: {
+        cloudwatchMetricsEnabled: true,
+        metricName: 'FirefoxApiProxyRateLimit',
+        sampledRequestsEnabled: true,
+      },
+    };
+
+    return new Wafv2WebAcl(this, `${config.name}-waf`, {
+      description: `Waf for firefox-api-proxy ${config.environment} environment`,
+      name: `${config.name}-waf-${config.environment}`,
+      scope: 'REGIONAL',
+      defaultAction: { allow: {} },
+      visibilityConfig: {
+        cloudwatchMetricsEnabled: true,
+        metricName: `${config.name}-waf-${config.environment}`,
+        sampledRequestsEnabled: true,
+      },
+      rule: [mozillaOpsSourceRule, globalRateLimitRule],
     });
   }
 }
