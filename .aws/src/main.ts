@@ -301,31 +301,23 @@ class Stack extends TerraformStack {
       name: 'MozillaOpsSource',
       priority: 0,
       action: { count: {} },
-      statement: [
-        {
-          byteMatchStatement: [
+      statement: {
+        byteMatchStatement: {
+          searchString: 'mozilla',
+          fieldToMatch: {
+            singleHeader: {
+              name: 'x-source',
+            },
+          },
+          textTransformation: [
             {
-              searchString: 'mozilla',
-              fieldToMatch: [
-                {
-                  singleHeader: [
-                    {
-                      name: 'x-source',
-                    },
-                  ],
-                },
-              ],
-              textTransformation: [
-                {
-                  priority: 0,
-                  type: 'LOWERCASE',
-                },
-              ],
-              positionalConstraint: 'EXACTLY',
+              priority: 0,
+              type: 'LOWERCASE',
             },
           ],
+          positionalConstraint: 'EXACTLY',
         },
-      ],
+      },
       visibilityConfig: {
         cloudwatchMetricsEnabled: true,
         metricName: 'MozillaOpsSource',
