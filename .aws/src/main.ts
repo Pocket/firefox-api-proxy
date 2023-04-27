@@ -266,7 +266,14 @@ class Stack extends TerraformStack {
   /**
    * Create an AWS WAF and associate it with an ALB.
    *
-   * Please see individual rules descriptions for behavior details.
+   * This is a very permissive first pass. Some high level limits are lifted
+   * from dotcom gateway, as it handles the current new-tab traffic, but it
+   * also handles a lot of other traffic. I expect this to need iteration
+   * once firefox stable starts consuming this service and we get a real
+   * idea of usage numbers.
+   *
+   * Please see individual rules descriptions for behavior details, and
+   * ideas for potential next steps.
    *
    * @param pocketApplication
    * @private
@@ -283,8 +290,10 @@ class Stack extends TerraformStack {
     If needed, this can be tightened down several different ways:
 
     1. Add a Wafv2WebAclRuleStatementRateBasedStatement based on `x-forwarded-for`
-       and block requests over a request limit.
+       and block requests over a request limit. See docs here for details on this:
+       https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based.html
     2. Block or limit requests from `consumer_key`s that are not firefox.
+    3. Make x-source a shared secret with SRE?
     */
     const mozillaOpsSourceRule = <Wafv2WebAclRule>{
       name: 'MozillaOpsSource',
