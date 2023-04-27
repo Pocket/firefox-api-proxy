@@ -12,7 +12,6 @@ import { DataAwsCallerIdentity } from '@cdktf/provider-aws/lib/data-aws-caller-i
 import { DataAwsSnsTopic } from '@cdktf/provider-aws/lib/data-aws-sns-topic';
 
 import { Wafv2WebAcl } from '@cdktf/provider-aws/lib/wafv2-web-acl';
-import { Wafv2WebAclAssociation } from '@cdktf/provider-aws/lib/wafv2-web-acl-association';
 import { Wafv2WebAclRule } from '@cdktf/provider-aws/lib/wafv2-web-acl';
 
 import { config } from './config';
@@ -48,13 +47,12 @@ class Stack extends TerraformStack {
       pagerDuty: this.createPagerDuty(),
       secretsManagerKmsAlias: this.getSecretsManagerKmsAlias(),
       snsTopic: this.getCodeDeploySnsTopic(),
+      wafAcl: this.createWafAcl(),
       region,
       caller,
     });
 
     this.createApplicationCodePipeline(pocketApp);
-
-    this.attachAWSWaf(pocketApp);
   }
 
   /**
@@ -133,6 +131,7 @@ class Stack extends TerraformStack {
     caller: DataAwsCallerIdentity;
     secretsManagerKmsAlias: DataAwsKmsAlias;
     snsTopic: DataAwsSnsTopic;
+    wafAcl: Wafv2WebAcl;
   }): PocketALBApplication {
     const {
       //  pagerDuty, // enable if necessary
@@ -140,6 +139,7 @@ class Stack extends TerraformStack {
       caller,
       secretsManagerKmsAlias,
       snsTopic,
+      wafAcl,
     } = dependencies;
 
     return new PocketALBApplication(this, 'application', {
@@ -247,6 +247,9 @@ class Stack extends TerraformStack {
         taskExecutionDefaultAttachmentArn:
           'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy',
       },
+      wafConfig: {
+        aclArn: wafAcl.arn,
+      },
       autoscalingConfig: {
         targetMinCapacity: 2,
         targetMaxCapacity: 10,
@@ -264,7 +267,7 @@ class Stack extends TerraformStack {
   }
 
   /**
-   * Create an AWS WAF and associate it with an ALB.
+   * Create an AWS WAF ACL and return it.
    *
    * This is a very permissive first pass. Some high level limits are lifted
    * from dotcom gateway, as it handles the current new-tab traffic, but it
@@ -275,10 +278,9 @@ class Stack extends TerraformStack {
    * Please see individual rules descriptions for behavior details, and
    * ideas for potential next steps.
    *
-   * @param pocketApplication
    * @private
    */
-  private attachAWSWaf(pocketApplication: PocketALBApplication) {
+  private createWafAcl() {
     /* 
     Rule 0: MozillaOpsSource
 
@@ -298,7 +300,7 @@ class Stack extends TerraformStack {
     const mozillaOpsSourceRule = <Wafv2WebAclRule>{
       name: 'MozillaOpsSource',
       priority: 0,
-      action: [{ allow: [{}] }],
+      action: [{ count: [{}] }],
       statement: [
         {
           byteMatchStatement: [
@@ -358,8 +360,7 @@ class Stack extends TerraformStack {
       },
     };
 
-    // create WAF and associate it with the ALB
-    const waf = new Wafv2WebAcl(this, `${config.name}-waf`, {
+    return new Wafv2WebAcl(this, `${config.name}-waf`, {
       description: `Waf for firefox-api-proxy ${config.environment} environment`,
       name: `${config.name}-waf-${config.environment}`,
       scope: 'REGIONAL',
@@ -370,11 +371,6 @@ class Stack extends TerraformStack {
         sampledRequestsEnabled: true,
       },
       rule: [mozillaOpsSourceRule, globalRateLimitRule],
-    });
-
-    new Wafv2WebAclAssociation(this, `${config.name}-association`, {
-      resourceArn: pocketApplication.alb.alb.arn,
-      webAclArn: waf.arn,
     });
   }
 }
