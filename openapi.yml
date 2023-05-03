@@ -195,6 +195,7 @@ paths:
   /desktop/v1/recommendations:
     get:
       summary: Gets a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth.
+      description: Supports Fx desktop version 114 and up.
       operationId: getRecommendations
       # Intentionally blank security. No auth required.
       security:
@@ -281,7 +282,8 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
   /desktop/v1/recent-saves:
     get:
-      summary: Gets a list of the most recent saves for a specific user
+      summary: Gets a list of the most recent saves for a specific user.
+      description: Supports Fx desktop version 113 and up.
       operationId: getRecentSaves
       security:
         # require all WS (WebSession) security schemes together
