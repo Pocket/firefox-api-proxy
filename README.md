@@ -2,6 +2,22 @@
 
 This service proxies Firefox browser API requests across multiple back end services.
 
+This service is only intended to be used by firefox clients. It has a lot of convention and rigidity that is specifically tailored to that client.
+
+## What's different about Firefox?
+
+Firefox is released through a lengthy release process. It takes a long time for code to reach users, and it takes a long time for users to stop using code.
+
+<https://whattrainisitnow.com/calendar/> Provides dates when specific releases will reach end users.
+
+<https://endoflife.date/firefox> Provides dates when specific versions will reach support end of life (but not necessarily when users will stop using it!)
+
+The bookkeeping we have for other services can be lacking here, because the date code is committed can be so far from when it actually reaches end users, and the code in firefox never really leaves production use.
+
+The [OpenAPI Spec](./openapi.yml) in this repo codifies the contract this service has with firefox in a single place, and documents the at least first and last versions of firefox stable to consume each API path. This documentation bridges the gap between agile and waterfall processes, and allows us to make confident decisions around API support requirements and deprecation without digging into multiple commits in multiple code bases.
+
+Types are also generated from this API spec, ensuring that internal GraphQL client changes are compatible with the API spec and contract.
+
 ## Application Overview
 
 [Express](https://expressjs.com) is being used to receive requests.
