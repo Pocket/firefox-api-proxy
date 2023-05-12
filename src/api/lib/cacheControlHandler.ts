@@ -2,10 +2,6 @@ import { NextFunction, Request, Response } from 'express';
 
 import ConfigFile from '../../config';
 
-// eslint / prettier config cannot cope with functions that return
-// functions like this. Thrashes between 2 states.
-// prettier-ignore
-
 /**
  * Sets the value of the 'Cache-Control' response header for all downstream
  * express handlers.
@@ -18,13 +14,16 @@ import ConfigFile from '../../config';
  *
  * @param cachePolicy string value to set CacheControl response header
  */
-const CacheControlHandler =
-  (cachePolicy: string, config: typeof ConfigFile) =>
-    (req: Request, res: Response, next: NextFunction): void => {
-      if (config.app.environment !== 'development') {
-        res.set('Cache-control', cachePolicy);
-      }
-      return next();
-    };
+const CacheControlHandler = (
+  cachePolicy: string,
+  config: typeof ConfigFile
+) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (config.app.environment !== 'development') {
+      res.set('Cache-control', cachePolicy);
+    }
+    return next();
+  };
+};
 
 export default CacheControlHandler;

@@ -11,7 +11,7 @@ import { components } from '../../../generated/openapi/types';
 type Recommendation = components['schemas']['Recommendation'];
 
 /**
- * This covers some happy path testinf ro complete server
+ * This covers some happy path testing for complete server
  * middleware composition. Unit tests still catch the finer
  * details, this just ensures middleware is all working together.
  *
@@ -72,9 +72,11 @@ describe('recommendations API server', () => {
     const res = await request(app)
       .get(`/desktop/v1/recommendations?${params.toString()}`)
       .set(authHeaders)
-      .send();
+      .send()
+      .expect('Cache-control', 'public, max-age=1800'); // assert the Cache-control header is overwritten by the /v1/recommendations route
 
     expect(res.status).toEqual(200);
+
     // response ins json
     const parsedRes = JSON.parse(res.text);
     expect(parsedRes.data?.length).toEqual(1);
