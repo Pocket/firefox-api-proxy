@@ -76,7 +76,7 @@ describe('recommendations API server', () => {
       .expect('Cache-control', 'public, max-age=1800'); // assert the Cache-control header is overwritten by the /v1/recommendations route
 
     expect(res.status).toEqual(200);
-    expect(res.headers['cache-control']).toEqual('public, max-age=1800');
+
     // response ins json
     const parsedRes = JSON.parse(res.text);
     expect(parsedRes.data?.length).toEqual(1);
