@@ -33,6 +33,7 @@ const forwardHeaderBlockList = [
   'Host',
   'Accept-Encoding',
   'Connection',
+  'Cache-control',
 ];
 
 // to set for constant lookup
