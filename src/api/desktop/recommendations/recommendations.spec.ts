@@ -61,6 +61,7 @@ describe('recommendations API server', () => {
       body: {
         data: mockResponse,
       },
+      headers: { ['Cache-control']: 'private,max-age=900' }, // This should be overwritten by the individual endpoint below
     });
 
     const params = new URLSearchParams();
