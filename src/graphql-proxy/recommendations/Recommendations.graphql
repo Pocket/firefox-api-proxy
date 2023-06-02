@@ -1,4 +1,4 @@
-query Recommendations($locale: String!, $region: String, $count: Int) {
+query NewTabRecommendations($locale: String!, $region: String, $count: Int) {
   newTabSlate(locale: $locale, region: $region) {
     recommendations(count: $count) {
       tileId
