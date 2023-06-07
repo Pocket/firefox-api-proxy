@@ -2,7 +2,7 @@ import Ajv, { DefinedError } from 'ajv';
 
 import OpenApiSpec from '../../OpenAPISpec';
 import Recommendations from '../../../graphql-proxy/recommendations/recommendations';
-import { responseTransformer } from './response';
+import { appendUtmSource, responseTransformer } from './response';
 import { WebAuth } from '../../../auth/types';
 
 jest.mock('../../../graphql-proxy/recommendations/recommendations');
@@ -47,9 +47,38 @@ describe('response', () => {
       if (valid) {
         // any additional expectations can be defined here
         expect(res.data.length).toEqual(30);
+        expect(res.data[0].url.endsWith('utm_source=pocket-newtab-bff'));
       } else {
         throw validate.errors;
       }
+    });
+  });
+
+  describe('appendUtmSource', () => {
+    it('should add a utm_source query parameter when input URL does not have any query parameters', () => {
+      const url = 'https://example.com';
+      const expected = 'https://example.com/?utm_source=pocket-newtab-bff';
+      expect(appendUtmSource(url)).toBe(expected);
+    });
+
+    it('should add a utm_source query parameter when the input URL already has a query parameter', () => {
+      const url = 'https://example.com?foo=bar';
+      const expected =
+        'https://example.com/?foo=bar&utm_source=pocket-newtab-bff';
+      expect(appendUtmSource(url)).toBe(expected);
+    });
+
+    it('should add utm_source query parameter when the input URL ends with a fragment', () => {
+      const url = 'https://example.com#my-fragment';
+      const expected =
+        'https://example.com/?utm_source=pocket-newtab-bff#my-fragment';
+      expect(appendUtmSource(url)).toBe(expected);
+    });
+
+    it('should override utm_source query parameter if the url already contains utm_source', () => {
+      const url = 'https://example.com/?utm_source=fgfeed';
+      const expected = 'https://example.com/?utm_source=pocket-newtab-bff';
+      expect(appendUtmSource(url)).toBe(expected);
     });
   });
 });
