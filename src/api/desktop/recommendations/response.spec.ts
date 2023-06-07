@@ -74,5 +74,11 @@ describe('response', () => {
         'https://example.com/?utm_source=pocket-newtab-bff#my-fragment';
       expect(appendUtmSource(url)).toBe(expected);
     });
+
+    it('should override utm_source query parameter if the url already contains utm_source', () => {
+      const url = 'https://example.com/?utm_source=fgfeed';
+      const expected = 'https://example.com/?utm_source=pocket-newtab-bff';
+      expect(appendUtmSource(url)).toBe(expected);
+    });
   });
 });
