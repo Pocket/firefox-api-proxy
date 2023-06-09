@@ -37,7 +37,22 @@ type ValidatorFunction = (value: any) => {
 };
 
 // all valid locales
-const validLocales = ['fr', 'fr-FR', 'es', 'es-ES', 'it', 'it-IT'];
+const validLocales = [
+  'fr',
+  'fr-FR',
+  'es',
+  'es-ES',
+  'it',
+  'it-IT',
+  'en',
+  'en-CA',
+  'en-GB',
+  'en-US',
+  'de',
+  'de-DE',
+  'de-AT',
+  'de-CH',
+];
 // copy to set for fast lookup, all lowercase
 const validLocalesSet = new Set(
   validLocales.map((locale) => locale.toLowerCase())

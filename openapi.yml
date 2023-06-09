@@ -221,14 +221,14 @@ paths:
             enum: [
               # relevant docs: https://docs.google.com/document/d/1omclr-eETJ7zAWTMI7mvvsc3_-ns2Iiho4jPEfrmZfo
               # listing locales that should still be served through the v3 APIs,
-              # these are intentionally disabled for now.
-              # en-CA, en-GB, en-US,
-              # de, de-AT, de-CH,
 
-              # new markets will be served through this API:
+              # fr, es, it will be served through this API in Firefox 114,
+              # and we plan to migrate all NewTab markets in Firefox 116:
               fr, fr-FR,
               es, es-ES,
               it, it-IT,
+              en, en-CA, en-GB, en-US,
+              de, de-DE, de-AT, de-CH
             ]
         - name: region
           in: query
@@ -319,7 +319,7 @@ paths:
                 properties:
                   data:
                     type: array
-                    items: 
+                    items:
                       oneOf:
                         - $ref: "#/components/schemas/Save"
                         - $ref: "#/components/schemas/PendingSave"

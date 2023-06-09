@@ -12,7 +12,18 @@ import {
 import { APIError, APIErrorResponse, BFFFxError } from '../../../bfffxError';
 
 const randomLocale = () =>
-  faker.helpers.arrayElement(['fr', 'fr-FR', 'es', 'es-ES', 'it', 'it-IT']);
+  faker.helpers.arrayElement([
+    'fr',
+    'fr-FR',
+    'es',
+    'es-ES',
+    'it',
+    'it-IT',
+    'en',
+    'en-CA',
+    'de',
+    'de-CH',
+  ]);
 
 const randomRegion = () => faker.helpers.arrayElement(['FR', 'ES', 'IT']);
 
@@ -119,7 +130,9 @@ describe('input.ts recommendations query parameters', () => {
               status: '400',
               title: 'Bad Request',
               detail:
-                'Locale must be provided. Valid locales include: ["fr","fr-FR","es","es-ES","it","it-IT"]',
+                'Locale must be provided. Valid locales include: [' +
+                '"fr","fr-FR","es","es-ES","it","it-IT","en","en-CA",' +
+                '"en-GB","en-US","de","de-DE","de-AT","de-CH"]',
               source: {
                 parameters: 'locale',
               },
@@ -153,7 +166,9 @@ describe('input.ts recommendations query parameters', () => {
               status: '400',
               title: 'Bad Request',
               detail:
-                'Locale must be provided. Valid locales include: ["fr","fr-FR","es","es-ES","it","it-IT"]',
+                'Locale must be provided. Valid locales include: [' +
+                '"fr","fr-FR","es","es-ES","it","it-IT","en","en-CA",' +
+                '"en-GB","en-US","de","de-DE","de-AT","de-CH"]',
               source: {
                 parameters: 'locale',
               },
