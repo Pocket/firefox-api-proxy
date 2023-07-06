@@ -25,7 +25,8 @@ const randomLocale = () =>
     'de-CH',
   ]);
 
-const randomRegion = () => faker.helpers.arrayElement(['FR', 'ES', 'IT']);
+const randomRegion = () =>
+  faker.helpers.arrayElement(['FR', 'ES', 'IT', 'DE', 'US', 'CA', 'IN']);
 
 describe('input.ts recommendations query parameters', () => {
   describe('setDefaultsAndCoerceTypes', () => {
@@ -141,7 +142,8 @@ describe('input.ts recommendations query parameters', () => {
               status: '400',
               title: 'Bad Request',
               detail:
-                'Region must be provided. Valid regions include ["FR","ES","IT"]',
+                'Region must be provided. Valid regions include [' +
+                '"US","CA","DE","GB","IE","FR","ES","IT","IN","CH","AT","BE"]',
               source: {
                 parameters: 'region',
               },
@@ -177,7 +179,8 @@ describe('input.ts recommendations query parameters', () => {
               status: '400',
               title: 'Bad Request',
               detail:
-                'Region must be provided. Valid regions include ["FR","ES","IT"]',
+                'Region must be provided. Valid regions include [' +
+                '"US","CA","DE","GB","IE","FR","ES","IT","IN","CH","AT","BE"]',
               source: {
                 parameters: 'region',
               },

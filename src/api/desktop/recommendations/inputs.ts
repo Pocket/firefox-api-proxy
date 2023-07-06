@@ -79,7 +79,20 @@ const isValidLocale: ValidatorFunction = (locale?: string) =>
     : null;
 
 // all valid regions
-const validRegions = ['FR', 'ES', 'IT'];
+const validRegions = [
+  'US',
+  'CA',
+  'DE',
+  'GB',
+  'IE',
+  'FR',
+  'ES',
+  'IT',
+  'IN',
+  'CH',
+  'AT',
+  'BE',
+];
 // copy to set for fast lookup, all lowercase
 const validRegionsSet = new Set(
   validRegions.map((region) => region.toLowerCase())

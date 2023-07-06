@@ -220,9 +220,8 @@ paths:
             type: string
             enum: [
               # relevant docs: https://docs.google.com/document/d/1omclr-eETJ7zAWTMI7mvvsc3_-ns2Iiho4jPEfrmZfo
-              # listing locales that should still be served through the v3 APIs,
 
-              # fr, es, it will be served through this API in Firefox 114,
+              # fr, es, it are served through this API in Firefox 114,
               # and we plan to migrate all NewTab markets in Firefox 116:
               fr, fr-FR,
               es, es-ES,
@@ -238,12 +237,10 @@ paths:
             type: string
             enum: [
               # relevant docs: https://docs.google.com/document/d/1omclr-eETJ7zAWTMI7mvvsc3_-ns2Iiho4jPEfrmZfo
-              # listing regions that should still be served through the v3 APIs,
-              # these are intentionally disabled for now.
-              # US, CA, DE, GB, IN, CH, AT, BE, IE
 
-              # new markets will be served through this API:
-              FR, ES, IT,
+              # FR, ES, IT are served through this API in Firefox 114,
+              # and we plan to migrate all NewTab markets in Firefox 116:
+              US, CA, DE, GB, IE, FR, ES, IT, IN, CH, AT, BE,
             ]
       responses:
         '200':
