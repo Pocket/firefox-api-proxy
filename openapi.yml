@@ -237,9 +237,6 @@ paths:
             type: string
             enum: [
               # relevant docs: https://docs.google.com/document/d/1omclr-eETJ7zAWTMI7mvvsc3_-ns2Iiho4jPEfrmZfo
-
-              # FR, ES, IT are served through this API in Firefox 114,
-              # and we plan to migrate all NewTab markets in Firefox 116:
               US, CA, DE, GB, IE, FR, ES, IT, IN, CH, AT, BE,
             ]
       responses:
