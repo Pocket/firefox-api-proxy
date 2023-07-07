@@ -12,9 +12,21 @@ import {
 import { APIError, APIErrorResponse, BFFFxError } from '../../../bfffxError';
 
 const randomLocale = () =>
-  faker.helpers.arrayElement(['fr', 'fr-FR', 'es', 'es-ES', 'it', 'it-IT']);
+  faker.helpers.arrayElement([
+    'fr',
+    'fr-FR',
+    'es',
+    'es-ES',
+    'it',
+    'it-IT',
+    'en',
+    'en-CA',
+    'de',
+    'de-CH',
+  ]);
 
-const randomRegion = () => faker.helpers.arrayElement(['FR', 'ES', 'IT']);
+const randomRegion = () =>
+  faker.helpers.arrayElement(['FR', 'ES', 'IT', 'DE', 'US', 'CA', 'IN']);
 
 describe('input.ts recommendations query parameters', () => {
   describe('setDefaultsAndCoerceTypes', () => {
@@ -119,7 +131,9 @@ describe('input.ts recommendations query parameters', () => {
               status: '400',
               title: 'Bad Request',
               detail:
-                'Locale must be provided. Valid locales include: ["fr","fr-FR","es","es-ES","it","it-IT"]',
+                'Locale must be provided. Valid locales include: [' +
+                '"fr","fr-FR","es","es-ES","it","it-IT","en","en-CA",' +
+                '"en-GB","en-US","de","de-DE","de-AT","de-CH"]',
               source: {
                 parameters: 'locale',
               },
@@ -128,7 +142,8 @@ describe('input.ts recommendations query parameters', () => {
               status: '400',
               title: 'Bad Request',
               detail:
-                'Region must be provided. Valid regions include ["FR","ES","IT"]',
+                'Region must be provided. Valid regions include [' +
+                '"US","CA","DE","GB","IE","FR","ES","IT","IN","CH","AT","BE"]',
               source: {
                 parameters: 'region',
               },
@@ -153,7 +168,9 @@ describe('input.ts recommendations query parameters', () => {
               status: '400',
               title: 'Bad Request',
               detail:
-                'Locale must be provided. Valid locales include: ["fr","fr-FR","es","es-ES","it","it-IT"]',
+                'Locale must be provided. Valid locales include: [' +
+                '"fr","fr-FR","es","es-ES","it","it-IT","en","en-CA",' +
+                '"en-GB","en-US","de","de-DE","de-AT","de-CH"]',
               source: {
                 parameters: 'locale',
               },
@@ -162,7 +179,8 @@ describe('input.ts recommendations query parameters', () => {
               status: '400',
               title: 'Bad Request',
               detail:
-                'Region must be provided. Valid regions include ["FR","ES","IT"]',
+                'Region must be provided. Valid regions include [' +
+                '"US","CA","DE","GB","IE","FR","ES","IT","IN","CH","AT","BE"]',
               source: {
                 parameters: 'region',
               },

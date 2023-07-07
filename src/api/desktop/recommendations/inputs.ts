@@ -37,7 +37,22 @@ type ValidatorFunction = (value: any) => {
 };
 
 // all valid locales
-const validLocales = ['fr', 'fr-FR', 'es', 'es-ES', 'it', 'it-IT'];
+const validLocales = [
+  'fr',
+  'fr-FR',
+  'es',
+  'es-ES',
+  'it',
+  'it-IT',
+  'en',
+  'en-CA',
+  'en-GB',
+  'en-US',
+  'de',
+  'de-DE',
+  'de-AT',
+  'de-CH',
+];
 // copy to set for fast lookup, all lowercase
 const validLocalesSet = new Set(
   validLocales.map((locale) => locale.toLowerCase())
@@ -64,7 +79,20 @@ const isValidLocale: ValidatorFunction = (locale?: string) =>
     : null;
 
 // all valid regions
-const validRegions = ['FR', 'ES', 'IT'];
+const validRegions = [
+  'US',
+  'CA',
+  'DE',
+  'GB',
+  'IE',
+  'FR',
+  'ES',
+  'IT',
+  'IN',
+  'CH',
+  'AT',
+  'BE',
+];
 // copy to set for fast lookup, all lowercase
 const validRegionsSet = new Set(
   validRegions.map((region) => region.toLowerCase())
