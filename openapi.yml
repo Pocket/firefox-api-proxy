@@ -227,7 +227,7 @@ paths:
               es, es-ES,
               it, it-IT,
               en, en-CA, en-GB, en-US,
-              de, de-DE, de-AT, de-CH
+              de, de-DE, de-AT, de-CH,
             ]
         - name: region
           in: query
