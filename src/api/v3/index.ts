@@ -19,14 +19,12 @@ router.get(
   CacheControlHandler('public, max-age=1800', config),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      //console.log(req)
       const variables = handleQueryParameters(req.query);
 
       if (variables instanceof BFFFxError) {
         return next(variables);
       }
 
-      console.log(variables);
       const graphRes = await Recommendations({
         auth: req.auth,
         consumer_key: req.consumer_key,
@@ -36,7 +34,6 @@ router.get(
 
       res.json(responseTransformer(graphRes) as GlobalRecsResponse);
     } catch (error) {
-      console.log(error);
       const responseError = GraphQLErrorHandler(error);
       return next(responseError);
     }

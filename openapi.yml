@@ -353,7 +353,7 @@ paths:
         - in: query
           name: locale_lang
           description: Firefox locale
-          required: false
+          required: true
           schema:
             type: string
             default: en-US

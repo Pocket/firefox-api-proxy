@@ -206,7 +206,7 @@ export interface operations {
         /** @description Maximum number of items to return */
       query: {
         version: number;
-        locale_lang?: string;
+        locale_lang: string;
         region?: string;
         count?: number;
       };
