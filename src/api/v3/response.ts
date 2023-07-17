@@ -55,6 +55,7 @@ export const responseTransformer = (
       ],
       recsExpireTime: 5400,
       spocsPerNewTabs: 0.5,
+      // version is a static, arbitrary hash to mimic the legacy response schema
       version: '6f605b0212069b4b8d3d040faf55742061a25c16',
     },
     recommendations:
