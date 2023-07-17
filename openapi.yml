@@ -153,6 +153,62 @@ components:
           type: string
           description: The primary image for a Recommendation.
 
+    LegacyFeedItem:
+      type: object
+      required:
+        - id
+        - title
+        - url
+        - excerpt
+        - domain
+        - image_src
+        - raw_image_src
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        url:
+          type: string
+        excerpt:
+          type: string
+        domain:
+          type: string
+        image_src:
+          type: string
+        raw_image_src:
+          type: string
+
+    LegacySettings:
+      type: object
+      properties:
+        spocsPerNewTabs:
+          type: number
+        domainAffinityParameterSets:
+          type: object
+        timeSegments:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - startTime
+              - endTime
+              - weightPosition
+            properties:
+              id:
+                type: string
+              startTime:
+                type: integer
+              endTime:
+                type: integer
+              weightPosition:
+                type: number
+        recsExpireTime:
+          type: integer
+        version:
+          type: string
+
   # securitySchemes roughly map to authentication middleware
   securitySchemes:
     # The following schemes prefixed with "WS" all constitute a `WebSession` auth.
@@ -199,8 +255,8 @@ paths:
       operationId: getRecommendations
       # Intentionally blank security. No auth required.
       security:
-        - WSConsumerKeyAuth: []
-        - WSConsumerKeyAuthAlias: []
+        - WSConsumerKeyAuth: [ ]
+        - WSConsumerKeyAuthAlias: [ ]
       parameters:
         - name: count
           in: query
@@ -274,6 +330,93 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /v3/firefox/global-recs:
+    get:
+      deprecated: true
+      summary: Used by older versions of Firefox to get a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth.
+      description: Supports Fx desktop version 115 and below.
+      operationId: getGlobalRecs
+      # Intentionally blank security. No auth required.
+      security:
+        - WSConsumerKeyAuth: [ ]
+        - WSConsumerKeyAuthAlias: [ ]
+      parameters:
+        - in: query
+          name: version
+          description: API version
+          required: true
+          schema:
+            type: integer
+            minimum: 3
+            maximum: 3
+            default: 3
+        - in: query
+          name: locale_lang
+          description: Firefox locale
+          required: true
+          schema:
+            type: string
+            default: en-US
+        - in: query
+          name: region
+          description: Firefox region
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: count
+          description: Maximum number of items to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - spocs
+                  - settings
+                  - recommendations
+                properties:
+                  status:
+                    type: integer
+                    enum:
+                      - 1
+                  spocs:
+                    type: array
+                  settings:
+                    $ref: "#/components/schemas/LegacySettings"
+                  recommendations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/LegacyFeedItem"
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: This proxy service encountered an unexpected error.
+        '502':
+          description: Services downstream from this proxy encountered an unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '504':
+          description: Requests to downstream services timed out.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /desktop/v1/recent-saves:
     get:
       summary: Gets a list of the most recent saves for a specific user.
@@ -281,14 +424,14 @@ paths:
       operationId: getRecentSaves
       security:
         # require all WS (WebSession) security schemes together
-        - WSUserAuth: []
-          WSSessionAuth: []
-          WSLookupAuth: []
-          WSConsumerKeyAuth: []
-        - WSUserAuth: []
-          WSSessionAuth: []
-          WSLookupAuth: []
-          WSConsumerKeyAuthAlias: []
+        - WSUserAuth: [ ]
+          WSSessionAuth: [ ]
+          WSLookupAuth: [ ]
+          WSConsumerKeyAuth: [ ]
+        - WSUserAuth: [ ]
+          WSSessionAuth: [ ]
+          WSLookupAuth: [ ]
+          WSConsumerKeyAuthAlias: [ ]
       parameters:
         - name: count
           in: query
