@@ -18,7 +18,7 @@ const validate = ajv.compile(schema);
 describe('response', () => {
   it('ajv returns errors when bad objects', () => {
     const valid = validate({});
-    expect(!valid).toBeTruthy();
+    expect(valid).toBeFalsy();
     // uncomment if you want info about how errors look
     // throw validate.errors
     expect((validate.errors as DefinedError[]).length).toBeGreaterThan(0);
