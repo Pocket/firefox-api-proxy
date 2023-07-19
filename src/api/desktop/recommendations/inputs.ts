@@ -78,44 +78,6 @@ const isValidLocale: ValidatorFunction = (locale?: string) =>
     }
     : null;
 
-// all valid regions
-const validRegions = [
-  'US',
-  'CA',
-  'DE',
-  'GB',
-  'IE',
-  'FR',
-  'ES',
-  'IT',
-  'IN',
-  'CH',
-  'AT',
-  'BE',
-];
-// copy to set for fast lookup, all lowercase
-const validRegionsSet = new Set(
-  validRegions.map((region) => region.toLowerCase())
-);
-
-// prettier config thrashes here
-// prettier-ignore
-/**
- * Validates regions. This ensures that region is present and
- * contains a valid value.
- *
- * Returns null if valid, or returns details to build an error
- * if invalid.
- * @param region
- */
-const isValidRegion: ValidatorFunction = (region?: string) =>
-  !validRegionsSet.has(region?.toLowerCase?.())
-    ? {
-      propertyName: 'region',
-      errorDetail: `Region must be provided. Valid regions include ${JSON.stringify(validRegions)}`,
-    }
-    : null;
-
 // prettier config thrashes here
 // prettier-ignore
 // returns details to build error response if invalid
@@ -174,7 +136,6 @@ export const validate = (
   const errorDetails = [
     isValidCount(query.count),
     isValidLocale(query.locale),
-    isValidRegion(query.region),
   ].filter((ed) => ed !== null);
 
   if (errorDetails.length > 0) {

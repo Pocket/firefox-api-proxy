@@ -155,11 +155,11 @@ export interface operations {
     parameters: {
         /** @description The number of items to return. */
         /** @description This locale string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive. */
-        /** @description This region string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive. */
+        /** @description This region string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive. See [Firefox Home & New Tab Regional Differences](https://mozilla-hub.atlassian.net/wiki/spaces/FPS/pages/80448805/Regional+Differences). */
       query: {
         count?: number;
         locale: "fr" | "fr-FR" | "es" | "es-ES" | "it" | "it-IT" | "en" | "en-CA" | "en-GB" | "en-US" | "de" | "de-DE" | "de-AT" | "de-CH";
-        region: "US" | "CA" | "DE" | "GB" | "IE" | "FR" | "ES" | "IT" | "IN" | "CH" | "AT" | "BE";
+        region?: string;
       };
     };
     responses: {
