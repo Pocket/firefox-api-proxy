@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import assert from 'assert';
 
-import { RecommendationsQueryVariables } from '../../generated/graphql/types';
+import { NewTabRecommendationsQueryVariables } from '../../generated/graphql/types';
 import {
   GlobalRecsQueryParameterStrings,
   handleQueryParameters,
@@ -64,7 +64,7 @@ describe('input.ts recommendations query parameters', () => {
 
       const variables = handleQueryParameters(params);
       expect(variables).toStrictEqual(
-        expect.objectContaining<RecommendationsQueryVariables>({
+        expect.objectContaining<NewTabRecommendationsQueryVariables>({
           count: parseInt(params.count, 10),
           locale: params.locale_lang,
           region: params.region,

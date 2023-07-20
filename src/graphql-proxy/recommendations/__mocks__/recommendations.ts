@@ -8,7 +8,7 @@ import { faker } from '@faker-js/faker';
 
 import common from '../../__mocks__/common';
 
-import { RecommendationsQuery } from '../../../generated/graphql/types';
+import { NewTabRecommendationsQuery } from '../../../generated/graphql/types';
 import { RecommendationsParameters } from '../recommendations';
 
 /**
@@ -27,7 +27,7 @@ const fakerLocales = {
 
 const fakeRecommendations = (
   count
-): RecommendationsQuery['newTabSlate']['recommendations'] => {
+): NewTabRecommendationsQuery['newTabSlate']['recommendations'] => {
   return Array(count)
     .fill(0)
     .map(() => ({
@@ -48,7 +48,7 @@ const recommendations = async ({
   consumer_key,
   forwardHeadersMiddleware,
   variables,
-}: RecommendationsParameters): Promise<RecommendationsQuery> => {
+}: RecommendationsParameters): Promise<NewTabRecommendationsQuery> => {
   // set faker locale based on variables
   // default to english if unrecognized, roughly matches graph behavior selecting locale.
   const fakerLocale = fakerLocales[variables.locale.toLowerCase()] ?? 'en';
@@ -57,6 +57,7 @@ const recommendations = async ({
   const response = {
     newTabSlate: {
       recommendations: fakeRecommendations(variables.count),
+      utmSource: `pocket-newtab-${fakerLocale}`,
     },
   };
 

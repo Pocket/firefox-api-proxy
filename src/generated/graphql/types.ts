@@ -126,6 +126,11 @@ export type Collection = {
   language: CollectionLanguage;
   partnership?: Maybe<CollectionPartnership>;
   publishedAt?: Maybe<Scalars['DateString']>;
+  /**
+   * Provides short url for the given_url in the format: https://pocket.co/<identifier>.
+   * marked as beta because it's not ready yet for large client request.
+   */
+  shortUrl?: Maybe<Scalars['Url']>;
   slug: Scalars['String'];
   status: CollectionStatus;
   stories: Array<CollectionStory>;
@@ -233,6 +238,11 @@ export type CorpusItem = {
   publisher: Scalars['String'];
   /** The user's saved item, from the Corpus Item, if the corpus item was saved to the user's saves */
   savedItem?: Maybe<SavedItem>;
+  /**
+   * Provides short url for the given_url in the format: https://pocket.co/<identifier>.
+   * marked as beta because it's not ready yet for large client request.
+   */
+  shortUrl?: Maybe<Scalars['Url']>;
   /** If the Corpus Item is pocket owned with a specific type, this is the associated object (Collection or SyndicatedArticle). */
   target?: Maybe<CorpusTarget>;
   /** The title of the Approved Item. */
@@ -294,6 +304,8 @@ export type CorpusSlate = {
   recommendations: Array<CorpusRecommendation>;
   /** A smaller, secondary headline that can be displayed to provide additional context on the slate. */
   subheadline?: Maybe<Scalars['String']>;
+  /** utm_source value that can be set on the url by the caller to attribute the recommendations. */
+  utmSource?: Maybe<Scalars['String']>;
 };
 
 
@@ -351,6 +363,7 @@ export type CreateHighlightInput = {
 /** Input data for creating a Shareable List. */
 export type CreateShareableListInput = {
   description?: InputMaybe<Scalars['String']>;
+  listItemNoteVisibility?: InputMaybe<ShareableListVisibility>;
   title: Scalars['String'];
 };
 
@@ -361,6 +374,7 @@ export type CreateShareableListItemInput = {
   imageUrl?: InputMaybe<Scalars['Url']>;
   itemId: Scalars['ID'];
   listExternalId: Scalars['ID'];
+  note?: InputMaybe<Scalars['String']>;
   publisher?: InputMaybe<Scalars['String']>;
   sortOrder: Scalars['Int'];
   title?: InputMaybe<Scalars['String']>;
@@ -373,6 +387,7 @@ export type CreateShareableListItemWithList = {
   excerpt?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['Url']>;
   itemId: Scalars['ID'];
+  note?: InputMaybe<Scalars['String']>;
   publisher?: InputMaybe<Scalars['String']>;
   sortOrder: Scalars['Int'];
   title?: InputMaybe<Scalars['String']>;
@@ -494,7 +509,7 @@ export type Image = {
   credit?: Maybe<Scalars['String']>;
   /** The determined height of the image at the url */
   height?: Maybe<Scalars['Int']>;
-  /** The id for placing within an Article View. {articleView.article} will have placeholders of <div id='RIL_IMG_X' /> where X is this id. Apps can download those images as needed and populate them in their article view. */
+  /** The id for placing within an Article View. Item.article will have placeholders of <div id='RIL_IMG_X' /> where X is this id. Apps can download those images as needed and populate them in their article view. */
   imageId: Scalars['Int'];
   /**
    * Absolute url to the image
@@ -559,7 +574,7 @@ export type Item = {
   datePublished?: Maybe<Scalars['DateString']>;
   /** The date the parser resolved this item */
   dateResolved?: Maybe<Scalars['DateString']>;
-  /** The domain, such as 'getpocket.com' of the {.resolved_url} */
+  /** The domain, such as 'getpocket.com' of the resolved_url */
   domain?: Maybe<Scalars['String']>;
   /**
    * The primary database id of the domain this article is from
@@ -647,6 +662,13 @@ export type Item = {
   responseCode?: Maybe<Scalars['Int']>;
   /** Helper property to identify if the given item is in the user's list */
   savedItem?: Maybe<SavedItem>;
+  /**
+   * Provides short url for the given_url in the format: https://pocket.co/<identifier>.
+   * marked as beta because it's not ready yet for large client request.
+   */
+  shortUrl?: Maybe<Scalars['Url']>;
+  /** If the url is an Article, the text in SSML format for speaking, i.e. Listen */
+  ssml?: Maybe<Scalars['String']>;
   /** If the item has a syndicated counterpart the syndication information */
   syndicatedArticle?: Maybe<SyndicatedArticle>;
   /**
@@ -850,7 +872,14 @@ export type Mutation = {
    * Returns firefox account ID sent as the query parameter with the request.
    */
   deleteUserByFxaId: Scalars['ID'];
-  /** Refresh an {Item}'s article content. */
+  /**
+   * temporary mutation for apple user migration.
+   * called by fxa-webhook proxy to update the fxaId and email of the user.
+   * Returns the pocket userId on success
+   * Note: requires `transfersub` to be set in the header.
+   */
+  migrateAppleUser: Scalars['ID'];
+  /** Refresh an Item's article content. */
   refreshItemArticle: Item;
   /**
    * Replaces the old tags associated with the savedItem to the new tag list
@@ -888,6 +917,24 @@ export type Mutation = {
    * timestamp.
    */
   saveUpsert: SaveWriteMutationPayload;
+  /** Archive a SavedItem (identified by URL) */
+  savedItemArchive?: Maybe<SavedItem>;
+  /** 'Soft-delete' a SavedItem (identified by URL) */
+  savedItemDelete?: Maybe<Scalars['Url']>;
+  /** Favorite a SavedItem (identified by URL) */
+  savedItemFavorite?: Maybe<SavedItem>;
+  /** Associate Tag(s) with a Save */
+  savedItemTag?: Maybe<SavedItem>;
+  /** Unarchive a SavedItem (identified by URL) */
+  savedItemUnArchive?: Maybe<SavedItem>;
+  /**
+   * Undo the 'soft-delete' operation on a SavedItem (identified by URL).
+   * Does not restore tags. Does not restore SavedItems that have been
+   * 'hard-deleted' (record removed from the database entirely).
+   */
+  savedItemUnDelete?: Maybe<SavedItem>;
+  /** 'Unfavorite' a 'favorite' SavedItem (identified by URL) */
+  savedItemUnFavorite?: Maybe<SavedItem>;
   /** Archives a SavedItem */
   updateSavedItemArchive: SavedItem;
   /** Favorites a SavedItem */
@@ -925,8 +972,12 @@ export type Mutation = {
   updateSavedItemUnDelete: SavedItem;
   /** Unfavorites a SavedItem */
   updateSavedItemUnFavorite: SavedItem;
-  /** Updates a Shareable List. This includes making it public. */
+  /** Updates a Shareable List. Cannot make a list public. */
   updateShareableList: ShareableList;
+  /** Updates a single Shareable List Item. */
+  updateShareableListItem: ShareableListItem;
+  /** Updates an array of Shareable List Items (sortOrder). */
+  updateShareableListItems: Array<ShareableListItem>;
   /**
    * Updates a Tag (renames the tag), and returns the updated Tag.
    * If a Tag with the updated name already exists in the database, will
@@ -1036,6 +1087,13 @@ export type MutationDeleteUserByFxaIdArgs = {
 
 
 /** Default Mutation Type */
+export type MutationMigrateAppleUserArgs = {
+  email: Scalars['String'];
+  fxaId: Scalars['ID'];
+};
+
+
+/** Default Mutation Type */
 export type MutationRefreshItemArticleArgs = {
   url: Scalars['String'];
 };
@@ -1085,6 +1143,55 @@ export type MutationSaveUnFavoriteArgs = {
 /** Default Mutation Type */
 export type MutationSaveUpsertArgs = {
   input: Array<SaveUpsertInput>;
+  timestamp: Scalars['ISOString'];
+};
+
+
+/** Default Mutation Type */
+export type MutationSavedItemArchiveArgs = {
+  givenUrl: Scalars['Url'];
+  timestamp: Scalars['ISOString'];
+};
+
+
+/** Default Mutation Type */
+export type MutationSavedItemDeleteArgs = {
+  givenUrl: Scalars['Url'];
+  timestamp: Scalars['ISOString'];
+};
+
+
+/** Default Mutation Type */
+export type MutationSavedItemFavoriteArgs = {
+  givenUrl: Scalars['Url'];
+  timestamp: Scalars['ISOString'];
+};
+
+
+/** Default Mutation Type */
+export type MutationSavedItemTagArgs = {
+  input: SavedItemTagInput;
+  timestamp: Scalars['ISOString'];
+};
+
+
+/** Default Mutation Type */
+export type MutationSavedItemUnArchiveArgs = {
+  givenUrl: Scalars['Url'];
+  timestamp: Scalars['ISOString'];
+};
+
+
+/** Default Mutation Type */
+export type MutationSavedItemUnDeleteArgs = {
+  givenUrl: Scalars['Url'];
+  timestamp: Scalars['ISOString'];
+};
+
+
+/** Default Mutation Type */
+export type MutationSavedItemUnFavoriteArgs = {
+  givenUrl: Scalars['Url'];
   timestamp: Scalars['ISOString'];
 };
 
@@ -1148,6 +1255,18 @@ export type MutationUpdateSavedItemUnFavoriteArgs = {
 /** Default Mutation Type */
 export type MutationUpdateShareableListArgs = {
   data: UpdateShareableListInput;
+};
+
+
+/** Default Mutation Type */
+export type MutationUpdateShareableListItemArgs = {
+  data: UpdateShareableListItemInput;
+};
+
+
+/** Default Mutation Type */
+export type MutationUpdateShareableListItemsArgs = {
+  data: Array<UpdateShareableListItemsInput>;
 };
 
 
@@ -1386,12 +1505,12 @@ export type Query = {
   /** Retrieves a paged set of published Collections. */
   getCollections: CollectionsResult;
   /**
-   * Look up {Item} info by ID.
+   * Look up Item info by ID.
    * @deprecated Use itemById instead
    */
   getItemByItemId?: Maybe<Item>;
   /**
-   * Look up {Item} info by a url.
+   * Look up Item info by a url.
    * @deprecated Use itemByUrl instead
    */
   getItemByUrl?: Maybe<Item>;
@@ -1424,9 +1543,9 @@ export type Query = {
   getUnleashAssignments?: Maybe<UnleashAssignmentList>;
   /** Get ranked corpus slates and recommendations to deliver a unified Home experience. The locale argument determines the UI and recommendation content language. */
   homeSlateLineup: CorpusSlateLineup;
-  /** Look up {Item} info by ID. */
+  /** Look up Item info by ID. */
   itemByItemId?: Maybe<Item>;
-  /** Look up {Item} info by a url. */
+  /** Look up Item info by a url. */
   itemByUrl?: Maybe<Item>;
   /**
    * List all available topics that we have recommendations for.
@@ -1469,10 +1588,6 @@ export type Query = {
   unleashAssignments?: Maybe<UnleashAssignmentList>;
   /** Get a user entity for an authenticated client */
   user?: Maybe<User>;
-  /** Gets a user for a given ID, only admin/internal service credentials will be allowed to do this for IDs other then their own. */
-  userById?: Maybe<User>;
-  /** Gets a user entity for a given access token */
-  userByToken?: Maybe<User>;
 };
 
 
@@ -1653,24 +1768,6 @@ export type QueryUnleashAssignmentsArgs = {
   context: UnleashContext;
 };
 
-
-/**
- * Default root level query type. All authorization checks are done in these queries.
- * TODO: These belong in a seperate User Service that provides a User object (the user settings will probably exist there too)
- */
-export type QueryUserByIdArgs = {
-  id: Scalars['ID'];
-};
-
-
-/**
- * Default root level query type. All authorization checks are done in these queries.
- * TODO: These belong in a seperate User Service that provides a User object (the user settings will probably exist there too)
- */
-export type QueryUserByTokenArgs = {
-  token: Scalars['String'];
-};
-
 export type RecItUserProfile = {
   userModels: Array<Scalars['String']>;
 };
@@ -1715,6 +1812,8 @@ export type RecommendationReason = {
 
 /** Reasons why recommendations are made. Focuses on client needs and is not exhaustive. */
 export enum RecommendationReasonType {
+  /** Recommendations based on hybrid collaborative filtering. */
+  HybridCfRecommender = 'HYBRID_CF_RECOMMENDER',
   /** Recommendations are sourced from the Pocket Hits newsletter. */
   PocketHits = 'POCKET_HITS',
   /** Recommendations that match the user's topic preferences are ranked higher. */
@@ -1836,7 +1935,11 @@ export type SavedItem = RemoteEntity & {
   suggestedTags?: Maybe<Array<Tag>>;
   /** The Tags associated with this SavedItem */
   tags?: Maybe<Array<Tag>>;
-  /** The title for user saved item. Set by the user and if not, set by the parser */
+  /**
+   * The title for user saved item. Set by the user and if not, set by the parser.
+   * For third party clients use-case only.
+   * @deprecated internal clients must use item.title
+   */
   title?: Maybe<Scalars['String']>;
   /** The url the user saved to their list */
   url: Scalars['String'];
@@ -1863,6 +1966,14 @@ export type SavedItemConnection = {
   totalCount: Scalars['Int'];
 };
 
+/** Payload for mutations that delete Saves */
+export type SavedItemDeleteMutationPayload = {
+  __typename?: 'SavedItemDeleteMutationPayload';
+  /** Any errors associated with the mutation. Empty if the mutation was succesful. */
+  errors: Array<SavedItemMutationError>;
+  success: Scalars['Boolean'];
+};
+
 /** An edge in a connection. */
 export type SavedItemEdge = {
   __typename?: 'SavedItemEdge';
@@ -1871,6 +1982,9 @@ export type SavedItemEdge = {
   /** The SavedItem at the end of the edge. */
   node?: Maybe<SavedItem>;
 };
+
+/** All types in this union should implement BaseError, for client fallback */
+export type SavedItemMutationError = NotFound | SyncConflict;
 
 export type SavedItemSearchResult = {
   __typename?: 'SavedItemSearchResult';
@@ -1924,6 +2038,12 @@ export type SavedItemTagAssociation = {
   tagId: Scalars['ID'];
 };
 
+/** Input field for adding Tag Associations to a SavedItem, by givenUrl */
+export type SavedItemTagInput = {
+  givenUrl: Scalars['Url'];
+  tagNames: Array<Scalars['String']>;
+};
+
 /** Input field for setting all Tag associations on a SavedItem. */
 export type SavedItemTagUpdateInput = {
   /** The SavedItem ID to associate Tags to */
@@ -1950,6 +2070,15 @@ export type SavedItemUpsertInput = {
   title?: InputMaybe<Scalars['String']>;
   /** The url to create/update the SavedItem with. (the url to save to the list) */
   url: Scalars['String'];
+};
+
+/** Payload for mutations that create or update SavedItems */
+export type SavedItemWriteMutationPayload = {
+  __typename?: 'SavedItemWriteMutationPayload';
+  /** Any errors associated with the mutation. Empty if the mutation was succesful. */
+  errors: Array<SavedItemMutationError>;
+  /** The mutated SavedItem objects; empty if the mutation did not succeed. */
+  savedItem: Array<SavedItem>;
 };
 
 /** A SavedItem can be one of these content types */
@@ -2204,7 +2333,7 @@ export enum SearchStatus {
 }
 
 /** A user-created list of Pocket saves that can be shared publicly. */
-export type ShareableList = ShareableListInterface & {
+export type ShareableList = {
   __typename?: 'ShareableList';
   /** The timestamp of when the list was created by its owner. */
   createdAt: Scalars['ISOString'];
@@ -2212,6 +2341,8 @@ export type ShareableList = ShareableListInterface & {
   description?: Maybe<Scalars['String']>;
   /** A unique string identifier in UUID format. */
   externalId: Scalars['ID'];
+  /** The visibility of notes added to list items for this list. */
+  listItemNoteVisibility: ShareableListVisibility;
   /** Pocket Saves that have been added to this list by the Pocket user. */
   listItems: Array<ShareableListItem>;
   /** The moderation status of the list. Defaults to VISIBLE. */
@@ -2222,36 +2353,7 @@ export type ShareableList = ShareableListInterface & {
    */
   slug?: Maybe<Scalars['String']>;
   /** The status of the list. Defaults to PRIVATE. */
-  status: ShareableListStatus;
-  /** The title of the list. Provided by the Pocket user. */
-  title: Scalars['String'];
-  /**
-   * The timestamp of when the list was last updated by its owner
-   * or a member of the moderation team.
-   */
-  updatedAt: Scalars['ISOString'];
-  /** The user who created this shareable list. */
-  user: User;
-};
-
-export type ShareableListInterface = {
-  /** The timestamp of when the list was created by its owner. */
-  createdAt: Scalars['ISOString'];
-  /** Optional text description of a Shareable List. Provided by the Pocket user. */
-  description?: Maybe<Scalars['String']>;
-  /** A unique string identifier in UUID format. */
-  externalId: Scalars['ID'];
-  /** Pocket Saves that have been added to this list by the Pocket user. */
-  listItems: Array<ShareableListItem>;
-  /** The moderation status of the list. Defaults to VISIBLE. */
-  moderationStatus: ShareableListModerationStatus;
-  /**
-   * A URL-ready identifier of the list. Generated from the title
-   * of the list when it's first made public. Unique per user.
-   */
-  slug?: Maybe<Scalars['String']>;
-  /** The status of the list. Defaults to PRIVATE. */
-  status: ShareableListStatus;
+  status: ShareableListVisibility;
   /** The title of the list. Provided by the Pocket user. */
   title: Scalars['String'];
   /**
@@ -2278,6 +2380,8 @@ export type ShareableListItem = {
   imageUrl?: Maybe<Scalars['Url']>;
   /** The Parser Item ID. */
   itemId: Scalars['ID'];
+  /** User generated note to accompany this list item. */
+  note?: Maybe<Scalars['String']>;
   /** The name of the publisher for this story. Supplied by the Parser. */
   publisher?: Maybe<Scalars['String']>;
   /** The custom sort order of stories within a list. Defaults to 1. */
@@ -2310,7 +2414,7 @@ export enum ShareableListModerationStatus {
  * A list that has been already shared publicly.
  * This type is needed as it needs to be cached.
  */
-export type ShareableListPublic = ShareableListInterface & {
+export type ShareableListPublic = {
   __typename?: 'ShareableListPublic';
   /** The timestamp of when the list was created by its owner. */
   createdAt: Scalars['ISOString'];
@@ -2318,6 +2422,8 @@ export type ShareableListPublic = ShareableListInterface & {
   description?: Maybe<Scalars['String']>;
   /** A unique string identifier in UUID format. */
   externalId: Scalars['ID'];
+  /** The visibility of notes added to list items for this list. */
+  listItemNoteVisibility: ShareableListVisibility;
   /** Pocket Saves that have been added to this list by the Pocket user. */
   listItems: Array<ShareableListItem>;
   /** The moderation status of the list. Defaults to VISIBLE. */
@@ -2328,7 +2434,7 @@ export type ShareableListPublic = ShareableListInterface & {
    */
   slug?: Maybe<Scalars['String']>;
   /** The status of the list. Defaults to PRIVATE. */
-  status: ShareableListStatus;
+  status: ShareableListVisibility;
   /** The title of the list. Provided by the Pocket user. */
   title: Scalars['String'];
   /**
@@ -2340,11 +2446,11 @@ export type ShareableListPublic = ShareableListInterface & {
   user: User;
 };
 
-/** The status of a Shareable List. Defaults to PRIVATE - visible only to its owner. */
-export enum ShareableListStatus {
-  /** The list is only visible to its owner - the Pocket user who created it. */
+/** The visibility levels used (e.g. list, list item note) in the Shareable List API. Defaults to PRIVATE - visible only to its owner. */
+export enum ShareableListVisibility {
+  /** Only visible to its owner - the Pocket user who created it. */
   Private = 'PRIVATE',
-  /** The list has been shared and can be viewed by anyone in the world. */
+  /** Can be viewed by anyone in the world. */
   Public = 'PUBLIC'
 }
 
@@ -2658,8 +2764,22 @@ export type UnleashProperties = {
 export type UpdateShareableListInput = {
   description?: InputMaybe<Scalars['String']>;
   externalId: Scalars['ID'];
-  status?: InputMaybe<ShareableListStatus>;
+  listItemNoteVisibility?: InputMaybe<ShareableListVisibility>;
+  status?: InputMaybe<ShareableListVisibility>;
   title?: InputMaybe<Scalars['String']>;
+};
+
+/** Input data for updating a single Shareable List Item. */
+export type UpdateShareableListItemInput = {
+  externalId: Scalars['ID'];
+  note?: InputMaybe<Scalars['String']>;
+  sortOrder?: InputMaybe<Scalars['Int']>;
+};
+
+/** Input data for updating an array of Shareable List Items, targeting sortOrder. */
+export type UpdateShareableListItemsInput = {
+  externalId: Scalars['ID'];
+  sortOrder: Scalars['Int'];
 };
 
 export type UpdateUserRecommendationPreferencesInput = {
@@ -2676,6 +2796,8 @@ export type User = {
   avatarUrl?: Maybe<Scalars['String']>;
   /** A users bio for their profile */
   description?: Maybe<Scalars['String']>;
+  /** Email address associated with the account. */
+  email?: Maybe<Scalars['String']>;
   /** The users first name */
   firstName?: Maybe<Scalars['String']>;
   /** The user's premium status */
@@ -2755,7 +2877,7 @@ export type UserRecommendationPreferences = {
   preferredTopics?: Maybe<Array<Topic>>;
 };
 
-/** A Video, typically within an Article View of an {Item} or if the Item is a video itself. */
+/** A Video, typically within an Article View of an Item or if the Item is a video itself. */
 export type Video = {
   __typename?: 'Video';
   /** If known, the height of the video in px */
@@ -2768,7 +2890,7 @@ export type Video = {
   type: VideoType;
   /** The video's id within the service defined by type */
   vid?: Maybe<Scalars['String']>;
-  /** The id of the video within Article View. {articleView.article} will have placeholders of <div id='RIL_VID_X' /> where X is this id. Apps can download those images as needed and populate them in their article view. */
+  /** The id of the video within Article View. Item.article will have placeholders of <div id='RIL_VID_X' /> where X is this id. Apps can download those images as needed and populate them in their article view. */
   videoId: Scalars['Int'];
   /** If known, the width of the video in px */
   width?: Maybe<Scalars['Int']>;
@@ -2809,15 +2931,15 @@ export type RecentSavesQueryVariables = Exact<{
 
 export type RecentSavesQuery = { __typename?: 'Query', user?: { __typename?: 'User', savedItems?: { __typename?: 'SavedItemConnection', edges?: Array<{ __typename?: 'SavedItemEdge', cursor: string, node?: { __typename?: 'SavedItem', id: string, status?: SavedItemStatus | null, url: string, item: { __typename: 'Item', wordCount?: number | null, title?: string | null, timeToRead?: number | null, resolvedUrl?: any | null, givenUrl: any, excerpt?: string | null, domain?: string | null, topImage?: { __typename?: 'Image', url: any } | null } | { __typename: 'PendingItem' } } | null } | null> | null } | null } | null };
 
-export type RecommendationsQueryVariables = Exact<{
+export type NewTabRecommendationsQueryVariables = Exact<{
   locale: Scalars['String'];
   region?: InputMaybe<Scalars['String']>;
   count?: InputMaybe<Scalars['Int']>;
 }>;
 
 
-export type RecommendationsQuery = { __typename?: 'Query', newTabSlate: { __typename?: 'CorpusSlate', recommendations: Array<{ __typename?: 'CorpusRecommendation', tileId: number, corpusItem: { __typename?: 'CorpusItem', excerpt: string, imageUrl: any, publisher: string, title: string, url: any } }> } };
+export type NewTabRecommendationsQuery = { __typename?: 'Query', newTabSlate: { __typename?: 'CorpusSlate', utmSource?: string | null, recommendations: Array<{ __typename?: 'CorpusRecommendation', tileId: number, corpusItem: { __typename?: 'CorpusItem', excerpt: string, imageUrl: any, publisher: string, title: string, url: any } }> } };
 
 
 export const RecentSavesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"RecentSaves"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"savedItems"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"statuses"},"value":{"kind":"ListValue","values":[{"kind":"EnumValue","value":"UNREAD"}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"sort"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"sortBy"},"value":{"kind":"EnumValue","value":"CREATED_AT"}},{"kind":"ObjectField","name":{"kind":"Name","value":"sortOrder"},"value":{"kind":"EnumValue","value":"DESC"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"item"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Item"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordCount"}},{"kind":"Field","name":{"kind":"Name","value":"topImage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}}]}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"timeToRead"}},{"kind":"Field","name":{"kind":"Name","value":"resolvedUrl"}},{"kind":"Field","name":{"kind":"Name","value":"givenUrl"}},{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"domain"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<RecentSavesQuery, RecentSavesQueryVariables>;
-export const RecommendationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Recommendations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locale"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"region"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"count"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"newTabSlate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}},{"kind":"Argument","name":{"kind":"Name","value":"region"},"value":{"kind":"Variable","name":{"kind":"Name","value":"region"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"recommendations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"count"},"value":{"kind":"Variable","name":{"kind":"Name","value":"count"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tileId"}},{"kind":"Field","name":{"kind":"Name","value":"corpusItem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"publisher"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]}}]}}]} as unknown as DocumentNode<RecommendationsQuery, RecommendationsQueryVariables>;
+export const NewTabRecommendationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NewTabRecommendations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locale"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"region"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"count"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"newTabSlate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}},{"kind":"Argument","name":{"kind":"Name","value":"region"},"value":{"kind":"Variable","name":{"kind":"Name","value":"region"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"utmSource"}},{"kind":"Field","name":{"kind":"Name","value":"recommendations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"count"},"value":{"kind":"Variable","name":{"kind":"Name","value":"count"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tileId"}},{"kind":"Field","name":{"kind":"Name","value":"corpusItem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"publisher"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]}}]}}]} as unknown as DocumentNode<NewTabRecommendationsQuery, NewTabRecommendationsQueryVariables>;

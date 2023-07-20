@@ -52,7 +52,7 @@ components:
           type: array
           items:
             oneOf:
-              - $ref: "#/components/schemas/Error"
+              - $ref: '#/components/schemas/Error'
     Save:
       type: object
       required:
@@ -255,8 +255,8 @@ paths:
       operationId: getRecommendations
       # Intentionally blank security. No auth required.
       security:
-        - WSConsumerKeyAuth: [ ]
-        - WSConsumerKeyAuthAlias: [ ]
+        - WSConsumerKeyAuth: []
+        - WSConsumerKeyAuthAlias: []
       parameters:
         - name: count
           in: query
@@ -275,22 +275,46 @@ paths:
           schema:
             type: string
             enum: [
-              # relevant docs: https://docs.google.com/document/d/1omclr-eETJ7zAWTMI7mvvsc3_-ns2Iiho4jPEfrmZfo
+                # relevant docs: https://docs.google.com/document/d/1omclr-eETJ7zAWTMI7mvvsc3_-ns2Iiho4jPEfrmZfo
 
-              # fr, es, it are served through this API in Firefox 114,
-              # and we plan to migrate all NewTab markets in Firefox 116:
-              fr, fr-FR,
-              es, es-ES,
-              it, it-IT,
-              en, en-CA, en-GB, en-US,
-              de, de-DE, de-AT, de-CH,
-            ]
+                # fr, es, it are served through this API in Firefox 114,
+                # and we plan to migrate all NewTab markets in Firefox 116:
+                fr,
+                fr-FR,
+                es,
+                es-ES,
+                it,
+                it-IT,
+                en,
+                en-CA,
+                en-GB,
+                en-US,
+                de,
+                de-DE,
+                de-AT,
+                de-CH,
+              ]
         - name: region
           in: query
           required: false
           description: This region string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive. See [Firefox Home & New Tab Regional Differences](https://mozilla-hub.atlassian.net/wiki/spaces/FPS/pages/80448805/Regional+Differences).
           schema:
             type: string
+            enum: [
+                # relevant docs: https://docs.google.com/document/d/1omclr-eETJ7zAWTMI7mvvsc3_-ns2Iiho4jPEfrmZfo
+                US,
+                CA,
+                DE,
+                GB,
+                IE,
+                FR,
+                ES,
+                IT,
+                IN,
+                CH,
+                AT,
+                BE,
+              ]
       responses:
         '200':
           description: OK
@@ -305,13 +329,13 @@ paths:
                     type: array
                     items:
                       oneOf:
-                        - $ref: "#/components/schemas/Recommendation"
+                        - $ref: '#/components/schemas/Recommendation'
         '400':
           description: Invalid request parameters
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: This proxy service encountered an unexpected error.
         '502':
@@ -319,13 +343,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
         '504':
           description: Requests to downstream services timed out.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /v3/firefox/global-recs:
     get:
       deprecated: true
@@ -334,8 +358,8 @@ paths:
       operationId: getGlobalRecs
       # Intentionally blank security. No auth required.
       security:
-        - WSConsumerKeyAuth: [ ]
-        - WSConsumerKeyAuthAlias: [ ]
+        - WSConsumerKeyAuth: []
+        - WSConsumerKeyAuthAlias: []
       parameters:
         - in: query
           name: version
@@ -388,17 +412,17 @@ paths:
                   spocs:
                     type: array
                   settings:
-                    $ref: "#/components/schemas/LegacySettings"
+                    $ref: '#/components/schemas/LegacySettings'
                   recommendations:
                     type: array
                     items:
-                      $ref: "#/components/schemas/LegacyFeedItem"
+                      $ref: '#/components/schemas/LegacyFeedItem'
         '400':
           description: Invalid request parameters
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: This proxy service encountered an unexpected error.
         '502':
@@ -406,13 +430,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
         '504':
           description: Requests to downstream services timed out.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
   /desktop/v1/recent-saves:
     get:
       summary: Gets a list of the most recent saves for a specific user.
@@ -420,14 +444,14 @@ paths:
       operationId: getRecentSaves
       security:
         # require all WS (WebSession) security schemes together
-        - WSUserAuth: [ ]
-          WSSessionAuth: [ ]
-          WSLookupAuth: [ ]
-          WSConsumerKeyAuth: [ ]
-        - WSUserAuth: [ ]
-          WSSessionAuth: [ ]
-          WSLookupAuth: [ ]
-          WSConsumerKeyAuthAlias: [ ]
+        - WSUserAuth: []
+          WSSessionAuth: []
+          WSLookupAuth: []
+          WSConsumerKeyAuth: []
+        - WSUserAuth: []
+          WSSessionAuth: []
+          WSLookupAuth: []
+          WSConsumerKeyAuthAlias: []
       parameters:
         - name: count
           in: query
@@ -454,20 +478,20 @@ paths:
                     type: array
                     items:
                       oneOf:
-                        - $ref: "#/components/schemas/Save"
-                        - $ref: "#/components/schemas/PendingSave"
+                        - $ref: '#/components/schemas/Save'
+                        - $ref: '#/components/schemas/PendingSave'
         '400':
           description: Invalid request parameters
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Authorization is missing or invalid.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: This proxy service encountered an unexpected error.
         '502':
@@ -475,10 +499,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
         '504':
           description: Requests to downstream services timed out.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'

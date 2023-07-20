@@ -7,7 +7,7 @@ import { handleQueryParameters } from './inputs';
 import { BFFFxError } from '../../../bfffxError';
 import Recommendations from '../../../graphql-proxy/recommendations/recommendations';
 import { forwardHeadersMiddleware } from '../../../graphql-proxy/lib/client';
-import { RecommendationsQueryVariables } from '../../../generated/graphql/types';
+import { NewTabRecommendationsQueryVariables } from '../../../generated/graphql/types';
 import { RecommendationsResponse, responseTransformer } from './response';
 
 const router = express.Router();
@@ -29,7 +29,7 @@ router.get(
         auth: req.auth,
         consumer_key: req.consumer_key,
         forwardHeadersMiddleware: forwardHeadersMiddleware(res),
-        variables: variables as RecommendationsQueryVariables,
+        variables: variables as NewTabRecommendationsQueryVariables,
       });
 
       res.json(responseTransformer(graphRes) as RecommendationsResponse);
