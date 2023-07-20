@@ -3,7 +3,7 @@ import { components, paths } from '../../generated/openapi/types';
 import { Unpack } from '../../types';
 import {
   appendUtmSource,
-  validateAndSetDefaultUtmSource,
+  validateAndSetUtmSource,
 } from '../desktop/recommendations/response';
 
 // unpack GraphQL generated types from NewTabRecommendationsQuery
@@ -28,7 +28,7 @@ export const mapRecommendation = (
     id: recommendation.tileId,
     url: appendUtmSource(
       recommendation.corpusItem.url,
-      validateAndSetDefaultUtmSource(utmSource)
+      validateAndSetUtmSource(utmSource)
     ),
     title: recommendation.corpusItem.title,
     excerpt: recommendation.corpusItem.excerpt,

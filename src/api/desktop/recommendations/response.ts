@@ -27,9 +27,9 @@ export const appendUtmSource = (url: string, utmSource: string): string => {
 };
 
 /**
- * Validates the utmSource and logs error if falsey.
+ * Validates the utmSource. logs error if falsey and sets it to a default value.
  */
-export const validateAndSetDefaultUtmSource = (utmSource?: string): string => {
+export const validateAndSetUtmSource = (utmSource?: string): string => {
   if (!utmSource) {
     Logger(
       'utmSource is undefined or null. Setting it to pocket-newtab'
@@ -44,19 +44,13 @@ export const mapRecommendation = (
   recommendation: GraphRecommendation,
   utmSource: string
 ): Recommendation => {
-  if (!utmSource) {
-    // Log error if utmSource is not received and set it to a default value.
-    Logger(
-      'utmSource is undefined or null. Setting it to pocket-newtab'
-    ).error();
-
-    utmSource = 'pocket-newtab';
-  }
-
   return {
     __typename: 'Recommendation',
     tileId: recommendation.tileId,
-    url: appendUtmSource(recommendation.corpusItem.url, utmSource),
+    url: appendUtmSource(
+      recommendation.corpusItem.url,
+      validateAndSetUtmSource(utmSource)
+    ),
     title: recommendation.corpusItem.title,
     excerpt: recommendation.corpusItem.excerpt,
     publisher: recommendation.corpusItem.publisher,
