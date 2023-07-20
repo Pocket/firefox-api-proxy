@@ -138,22 +138,12 @@ describe('input.ts recommendations query parameters', () => {
                 parameters: 'locale',
               },
             }),
-            expect.objectContaining<APIError>({
-              status: '400',
-              title: 'Bad Request',
-              detail:
-                'Region must be provided. Valid regions include [' +
-                '"US","CA","DE","GB","IE","FR","ES","IT","IN","CH","AT","BE"]',
-              source: {
-                parameters: 'region',
-              },
-            }),
           ]),
         })
       );
     });
 
-    it('region and locale are required', () => {
+    it('locale is required', () => {
       const res = validate({
         count: 30,
         // region and locale are missing
@@ -173,16 +163,6 @@ describe('input.ts recommendations query parameters', () => {
                 '"en-GB","en-US","de","de-DE","de-AT","de-CH"]',
               source: {
                 parameters: 'locale',
-              },
-            }),
-            expect.objectContaining<APIError>({
-              status: '400',
-              title: 'Bad Request',
-              detail:
-                'Region must be provided. Valid regions include [' +
-                '"US","CA","DE","GB","IE","FR","ES","IT","IN","CH","AT","BE"]',
-              source: {
-                parameters: 'region',
               },
             }),
           ]),
