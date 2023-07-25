@@ -1,11 +1,14 @@
-import { RecommendationsQuery } from '../../generated/graphql/types';
+import { NewTabRecommendationsQuery } from '../../generated/graphql/types';
 import { components, paths } from '../../generated/openapi/types';
 import { Unpack } from '../../types';
-import { appendUtmSource } from '../desktop/recommendations/response';
+import {
+  appendUtmSource,
+  validateAndSetUtmSource,
+} from '../desktop/recommendations/response';
 
-// unpack GraphQL generated types from RecommendationsQuery
+// unpack GraphQL generated types from NewTabRecommendationsQuery
 type GraphRecommendation = Unpack<
-  RecommendationsQuery['newTabSlate']['recommendations']
+  NewTabRecommendationsQuery['newTabSlate']['recommendations']
 >;
 
 // unpack exact OpenAPI generated types for API response
@@ -14,7 +17,8 @@ export type GlobalRecsResponse =
 type LegacyFeedItem = components['schemas']['LegacyFeedItem'];
 
 export const mapRecommendation = (
-  recommendation: GraphRecommendation
+  recommendation: GraphRecommendation,
+  utmSource: string
 ): LegacyFeedItem => {
   const encodedImageUrl = encodeURIComponent(
     recommendation.corpusItem.imageUrl
@@ -22,7 +26,10 @@ export const mapRecommendation = (
 
   return {
     id: recommendation.tileId,
-    url: appendUtmSource(recommendation.corpusItem.url),
+    url: appendUtmSource(
+      recommendation.corpusItem.url,
+      validateAndSetUtmSource(utmSource)
+    ),
     title: recommendation.corpusItem.title,
     excerpt: recommendation.corpusItem.excerpt,
     domain: recommendation.corpusItem.publisher,
@@ -32,7 +39,7 @@ export const mapRecommendation = (
 };
 
 export const responseTransformer = (
-  recommendations: RecommendationsQuery
+  recommendations: NewTabRecommendationsQuery
 ): GlobalRecsResponse => {
   return {
     status: 1,
@@ -58,7 +65,13 @@ export const responseTransformer = (
       // version is a static, arbitrary hash to mimic the legacy response schema
       version: '6f605b0212069b4b8d3d040faf55742061a25c16',
     },
-    recommendations:
-      recommendations.newTabSlate.recommendations.map(mapRecommendation),
+    recommendations: recommendations.newTabSlate.recommendations.map(
+      (recommendation) => {
+        return mapRecommendation(
+          recommendation,
+          recommendations.newTabSlate.utmSource
+        );
+      }
+    ),
   };
 };

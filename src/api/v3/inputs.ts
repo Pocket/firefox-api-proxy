@@ -9,7 +9,7 @@
 
 import { paths } from '../../generated/openapi/types';
 import { ToStringParams } from '../../types';
-import { RecommendationsQueryVariables } from '../../generated/graphql/types';
+import { NewTabRecommendationsQueryVariables } from '../../generated/graphql/types';
 import { BFFFxError, BFFFxErrorInstanceType } from '../../bfffxError';
 import { validate } from '../desktop/recommendations/inputs';
 
@@ -54,7 +54,7 @@ export const setDefaultsAndCoerceTypes = (
  *
  * Parses query parameter strings as provided by express.req.query,
  * sets defaults, validates them, and transforms them into
- * RecommendationsQueryVariables for the GraphQL client.
+ * NewTabRecommendationsQueryVariables for the GraphQL client.
  *
  * This returns a discriminated union that includes errors. Be sure
  * to check for them and return them to the client if present.
@@ -62,7 +62,7 @@ export const setDefaultsAndCoerceTypes = (
  */
 export const handleQueryParameters = (
   query: GlobalRecsQueryParameterStrings
-): RecommendationsQueryVariables | BFFFxErrorInstanceType => {
+): NewTabRecommendationsQueryVariables | BFFFxErrorInstanceType => {
   const coerced = setDefaultsAndCoerceTypes(query);
   const maybeValid = validate(coerced);
 
@@ -70,5 +70,5 @@ export const handleQueryParameters = (
     return maybeValid;
   }
 
-  return maybeValid as RecommendationsQueryVariables;
+  return maybeValid as NewTabRecommendationsQueryVariables;
 };

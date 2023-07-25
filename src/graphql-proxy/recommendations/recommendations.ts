@@ -1,9 +1,9 @@
 import { webProxyClient } from '../lib/client';
 
 import {
-  RecommendationsDocument,
-  RecommendationsQuery,
-  RecommendationsQueryVariables,
+  NewTabRecommendationsDocument,
+  NewTabRecommendationsQuery,
+  NewTabRecommendationsQueryVariables,
 } from '../../generated/graphql/types';
 import { ClientParameters } from '../types';
 
@@ -11,7 +11,7 @@ import { ClientParameters } from '../types';
  * recommendations.ts GraphQL client request parameters
  */
 export type RecommendationsParameters =
-  ClientParameters<RecommendationsQueryVariables>;
+  ClientParameters<NewTabRecommendationsQueryVariables>;
 
 /**
  * This client performs the query specified in Recommendations.graphql, utilizing
@@ -31,10 +31,10 @@ const Recommendations = async ({
   const client = webProxyClient(consumer_key, forwardHeadersMiddleware);
   auth.authenticateClient(client);
 
-  return client.request<RecommendationsQuery, RecommendationsQueryVariables>(
-    RecommendationsDocument,
-    variables
-  );
+  return client.request<
+    NewTabRecommendationsQuery,
+    NewTabRecommendationsQueryVariables
+  >(NewTabRecommendationsDocument, variables);
 };
 
 export default Recommendations;

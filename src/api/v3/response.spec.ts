@@ -48,8 +48,10 @@ describe('response', () => {
         // any additional expectations can be defined here
         expect(res.recommendations.length).toEqual(30);
         expect(
-          res.recommendations[0].url.endsWith('utm_source=pocket-newtab-bff')
-        );
+          res.recommendations[0].url.endsWith(
+            `utm_source=${graphResponse.newTabSlate.utmSource}`
+          )
+        ).toBeTruthy();
       } else {
         throw validate.errors;
       }
