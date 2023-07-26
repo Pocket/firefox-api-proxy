@@ -24,7 +24,7 @@ export const mapRecommendation = (
     recommendation.corpusItem.imageUrl
   );
 
-  return {
+  const feedItemToReturn: LegacyFeedItem = {
     id: recommendation.tileId,
     url: appendUtmSource(
       recommendation.corpusItem.url,
@@ -36,6 +36,15 @@ export const mapRecommendation = (
     raw_image_src: recommendation.corpusItem.imageUrl,
     image_src: `https://img-getpocket.cdn.mozilla.net/direct?url=${encodedImageUrl}&resize=w450`,
   };
+
+  if (recommendation.corpusItem.timeToRead) {
+    return {
+      ...feedItemToReturn,
+      time_to_read: recommendation.corpusItem.timeToRead,
+    };
+  }
+
+  return feedItemToReturn;
 };
 
 export const responseTransformer = (

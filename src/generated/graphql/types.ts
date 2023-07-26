@@ -245,6 +245,8 @@ export type CorpusItem = {
   shortUrl?: Maybe<Scalars['Url']>;
   /** If the Corpus Item is pocket owned with a specific type, this is the associated object (Collection or SyndicatedArticle). */
   target?: Maybe<CorpusTarget>;
+  /** Time to read in minutes. Is nullable. */
+  timeToRead?: Maybe<Scalars['Int']>;
   /** The title of the Approved Item. */
   title: Scalars['String'];
   /** The topic associated with the Approved Item. */
@@ -428,6 +430,14 @@ export type DomainMetadata = {
   /** The name of the domain (e.g., The New York Times) */
   name?: Maybe<Scalars['String']>;
 };
+
+/** The reason a user web session is being expired. */
+export enum ExpireUserWebSessionReason {
+  /** Expire web session upon logging out. */
+  Logout = 'LOGOUT',
+  /** Expire web session on account password change. */
+  PasswordChanged = 'PASSWORD_CHANGED'
+}
 
 /** Input field to boost the score of an elasticsearch document based on a specific field and value */
 export type FunctionalBoostField = {
@@ -873,6 +883,12 @@ export type Mutation = {
    */
   deleteUserByFxaId: Scalars['ID'];
   /**
+   * Expires a user's web session tokens by firefox account ID.
+   * Called by fxa-webhook proxy. Need to supply a reason why to expire user web session.
+   * Returns the user ID.
+   */
+  expireUserWebSessionByFxaId: Scalars['ID'];
+  /**
    * temporary mutation for apple user migration.
    * called by fxa-webhook proxy to update the fxaId and email of the user.
    * Returns the pocket userId on success
@@ -1083,6 +1099,13 @@ export type MutationDeleteTagArgs = {
 /** Default Mutation Type */
 export type MutationDeleteUserByFxaIdArgs = {
   id: Scalars['ID'];
+};
+
+
+/** Default Mutation Type */
+export type MutationExpireUserWebSessionByFxaIdArgs = {
+  id: Scalars['ID'];
+  reason: ExpireUserWebSessionReason;
 };
 
 
@@ -2800,6 +2823,8 @@ export type User = {
   email?: Maybe<Scalars['String']>;
   /** The users first name */
   firstName?: Maybe<Scalars['String']>;
+  /** Indicates if a user is FxA or not */
+  isFxa?: Maybe<Scalars['Boolean']>;
   /** The user's premium status */
   isPremium?: Maybe<Scalars['Boolean']>;
   /** The users last name */
@@ -2938,8 +2963,8 @@ export type NewTabRecommendationsQueryVariables = Exact<{
 }>;
 
 
-export type NewTabRecommendationsQuery = { __typename?: 'Query', newTabSlate: { __typename?: 'CorpusSlate', utmSource?: string | null, recommendations: Array<{ __typename?: 'CorpusRecommendation', tileId: number, corpusItem: { __typename?: 'CorpusItem', excerpt: string, imageUrl: any, publisher: string, title: string, url: any } }> } };
+export type NewTabRecommendationsQuery = { __typename?: 'Query', newTabSlate: { __typename?: 'CorpusSlate', utmSource?: string | null, recommendations: Array<{ __typename?: 'CorpusRecommendation', tileId: number, corpusItem: { __typename?: 'CorpusItem', excerpt: string, imageUrl: any, publisher: string, title: string, url: any, timeToRead?: number | null } }> } };
 
 
 export const RecentSavesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"RecentSaves"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"savedItems"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"statuses"},"value":{"kind":"ListValue","values":[{"kind":"EnumValue","value":"UNREAD"}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"sort"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"sortBy"},"value":{"kind":"EnumValue","value":"CREATED_AT"}},{"kind":"ObjectField","name":{"kind":"Name","value":"sortOrder"},"value":{"kind":"EnumValue","value":"DESC"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"item"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Item"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordCount"}},{"kind":"Field","name":{"kind":"Name","value":"topImage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}}]}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"timeToRead"}},{"kind":"Field","name":{"kind":"Name","value":"resolvedUrl"}},{"kind":"Field","name":{"kind":"Name","value":"givenUrl"}},{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"domain"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<RecentSavesQuery, RecentSavesQueryVariables>;
-export const NewTabRecommendationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NewTabRecommendations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locale"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"region"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"count"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"newTabSlate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}},{"kind":"Argument","name":{"kind":"Name","value":"region"},"value":{"kind":"Variable","name":{"kind":"Name","value":"region"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"utmSource"}},{"kind":"Field","name":{"kind":"Name","value":"recommendations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"count"},"value":{"kind":"Variable","name":{"kind":"Name","value":"count"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tileId"}},{"kind":"Field","name":{"kind":"Name","value":"corpusItem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"publisher"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]}}]}}]} as unknown as DocumentNode<NewTabRecommendationsQuery, NewTabRecommendationsQueryVariables>;
+export const NewTabRecommendationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NewTabRecommendations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locale"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"region"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"count"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"newTabSlate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}},{"kind":"Argument","name":{"kind":"Name","value":"region"},"value":{"kind":"Variable","name":{"kind":"Name","value":"region"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"utmSource"}},{"kind":"Field","name":{"kind":"Name","value":"recommendations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"count"},"value":{"kind":"Variable","name":{"kind":"Name","value":"count"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tileId"}},{"kind":"Field","name":{"kind":"Name","value":"corpusItem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"publisher"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"timeToRead"}}]}}]}}]}}]}}]} as unknown as DocumentNode<NewTabRecommendationsQuery, NewTabRecommendationsQueryVariables>;

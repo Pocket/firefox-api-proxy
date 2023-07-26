@@ -4,7 +4,7 @@ import { Logger } from '../../../logger';
 import { Unpack } from '../../../types';
 
 // unpack GraphQL generated type for 'recommendations' from NewTabRecommendationsQuery
-type GraphRecommendation = Unpack<
+export type GraphRecommendation = Unpack<
   NewTabRecommendationsQuery['newTabSlate']['recommendations']
 >;
 
@@ -44,7 +44,7 @@ export const mapRecommendation = (
   recommendation: GraphRecommendation,
   utmSource: string
 ): Recommendation => {
-  return {
+  const recommendationToReturn: Recommendation = {
     __typename: 'Recommendation',
     tileId: recommendation.tileId,
     url: appendUtmSource(
@@ -56,6 +56,15 @@ export const mapRecommendation = (
     publisher: recommendation.corpusItem.publisher,
     imageUrl: recommendation.corpusItem.imageUrl,
   };
+
+  if (recommendation.corpusItem.timeToRead) {
+    return {
+      ...recommendationToReturn,
+      timeToRead: recommendation.corpusItem.timeToRead,
+    };
+  }
+
+  return recommendationToReturn;
 };
 
 export const responseTransformer = (

@@ -10,6 +10,7 @@ import common from '../../__mocks__/common';
 
 import { NewTabRecommendationsQuery } from '../../../generated/graphql/types';
 import { RecommendationsParameters } from '../recommendations';
+import { GraphRecommendation } from '../../../api/desktop/recommendations/response';
 
 /**
  * faker locales do not match our own, map ours to faker locales
@@ -25,22 +26,43 @@ const fakerLocales = {
   it: 'it',
 };
 
+/**
+ *
+ * @param hasTimeToRead If true, timeToRead is set to [1, 9], otherwise it's undefined.
+ */
+const fakeRecommendation = (hasTimeToRead = true): GraphRecommendation => {
+  const recommendationWithoutTimeToRead: GraphRecommendation = {
+    __typename: 'CorpusRecommendation',
+    tileId: faker.datatype.number(),
+    corpusItem: {
+      excerpt: common.itemExcerpt(),
+      imageUrl: common.itemUrl(),
+      publisher: common.itemDomain(),
+      title: common.itemTitle(),
+      url: common.itemUrl(),
+    },
+  };
+
+  return hasTimeToRead
+    ? {
+        ...recommendationWithoutTimeToRead,
+        corpusItem: {
+          ...recommendationWithoutTimeToRead.corpusItem,
+          timeToRead: faker.datatype.number({ min: 1, max: 9 }),
+        },
+      }
+    : recommendationWithoutTimeToRead;
+};
+
 const fakeRecommendations = (
   count
 ): NewTabRecommendationsQuery['newTabSlate']['recommendations'] => {
   return Array(count)
     .fill(0)
-    .map(() => ({
-      __typename: 'CorpusRecommendation',
-      tileId: faker.datatype.number(),
-      corpusItem: {
-        excerpt: common.itemExcerpt(),
-        imageUrl: common.itemUrl(),
-        publisher: common.itemDomain(),
-        title: common.itemTitle(),
-        url: common.itemUrl(),
-      },
-    }));
+    .map((value, index) =>
+      // Add timeToRead only for even numbered recommendations.
+      fakeRecommendation(index % 2 === 0)
+    );
 };
 
 const recommendations = async ({
