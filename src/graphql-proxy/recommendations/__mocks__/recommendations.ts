@@ -43,17 +43,17 @@ const fakeRecommendation = (hasTimeToRead = true): GraphRecommendation => {
     },
   };
 
-  if (hasTimeToRead) {
-    return {
-      ...recommendationWithoutTimeToRead,
-      corpusItem: {
-        ...recommendationWithoutTimeToRead.corpusItem,
-        timeToRead: faker.datatype.number({ min: 1, max: 9 }),
-      },
-    };
-  } else {
+  if (!hasTimeToRead) {
     return recommendationWithoutTimeToRead;
   }
+
+  return {
+    ...recommendationWithoutTimeToRead,
+    corpusItem: {
+      ...recommendationWithoutTimeToRead.corpusItem,
+      timeToRead: faker.datatype.number({ min: 1, max: 9 }),
+    },
+  };
 };
 
 const fakeRecommendations = (
