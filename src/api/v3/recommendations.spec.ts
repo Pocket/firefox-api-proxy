@@ -64,7 +64,7 @@ describe('v3 legacy recommendations API server', () => {
 
     expect(res.status).toEqual(200);
 
-    // response ins json
+    // response is json
     const parsedRes = JSON.parse(res.text);
     expect(parsedRes.recommendations?.length).toEqual(1);
     const recommendation: LegacyFeedItem = parsedRes.recommendations[0];
@@ -74,5 +74,8 @@ describe('v3 legacy recommendations API server', () => {
     expect(recommendation.id).toEqual(
       mockResponse.newTabSlate.recommendations[0].tileId
     );
+    if (recommendation.time_to_read !== undefined) {
+      expect(recommendation.time_to_read).toBeGreaterThanOrEqual(1);
+    }
   });
 });

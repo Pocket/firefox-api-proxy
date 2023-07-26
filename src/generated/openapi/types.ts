@@ -113,6 +113,8 @@ export interface components {
       publisher: string;
       /** @description The primary image for a Recommendation. */
       imageUrl: string;
+      /** @description Article read time in minutes */
+      timeToRead?: number;
     };
     LegacyFeedItem: {
       id: number;
@@ -122,6 +124,7 @@ export interface components {
       domain: string;
       image_src: string;
       raw_image_src: string;
+      time_to_read?: number;
     };
     LegacySettings: {
       spocsPerNewTabs?: number;

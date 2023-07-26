@@ -152,6 +152,9 @@ components:
         imageUrl:
           type: string
           description: The primary image for a Recommendation.
+        timeToRead:
+          type: integer
+          description: Article read time in minutes
 
     LegacyFeedItem:
       type: object
@@ -178,6 +181,8 @@ components:
           type: string
         raw_image_src:
           type: string
+        time_to_read:
+          type: integer
 
     LegacySettings:
       type: object
@@ -300,21 +305,6 @@ paths:
           description: This region string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive. See [Firefox Home & New Tab Regional Differences](https://mozilla-hub.atlassian.net/wiki/spaces/FPS/pages/80448805/Regional+Differences).
           schema:
             type: string
-            enum: [
-                # relevant docs: https://docs.google.com/document/d/1omclr-eETJ7zAWTMI7mvvsc3_-ns2Iiho4jPEfrmZfo
-                US,
-                CA,
-                DE,
-                GB,
-                IE,
-                FR,
-                ES,
-                IT,
-                IN,
-                CH,
-                AT,
-                BE,
-              ]
       responses:
         '200':
           description: OK
