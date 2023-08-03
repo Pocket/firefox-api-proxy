@@ -44,7 +44,7 @@ export const setDefaultsAndCoerceTypes = (
 ): PreValidatedQueryParameters => {
   return {
     count: parseInt(stringParams.count ?? '20', 10),
-    region: stringParams.region,
+    region: stringParams.region ?? null,
     locale: stringParams.locale_lang,
   };
 };

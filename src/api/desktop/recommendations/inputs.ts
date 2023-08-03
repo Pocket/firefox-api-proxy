@@ -112,6 +112,7 @@ export const setDefaultsAndCoerceTypes = (
   const withDefaults = {
     // specify defaults here
     count: '30',
+    region: null,
     // spread to overwrite defaults with provided values
     ...stringParams,
   };
