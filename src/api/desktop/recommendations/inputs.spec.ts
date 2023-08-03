@@ -88,6 +88,12 @@ describe('input.ts recommendations query parameters', () => {
       );
     });
 
+    it('sets region to null if no default is provided', () => {
+      const res = setDefaultsAndCoerceTypes({});
+      // validation should return an error in this case, validating defaults though
+      expect(res.region).toStrictEqual(null);
+    });
+
     it('region is case insensitive', () => {
       const params = {
         count: faker.datatype.number({ min: 1, max: 30 }),

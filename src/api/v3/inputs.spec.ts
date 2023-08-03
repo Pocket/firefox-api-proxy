@@ -32,6 +32,12 @@ describe('input.ts recommendations query parameters', () => {
         count: 20,
       });
     });
+
+    it('sets region to null if no default is provided', () => {
+      const res = setDefaultsAndCoerceTypes({});
+      // validation should return an error in this case, validating defaults though
+      expect(res.region).toStrictEqual(null);
+    });
   });
 
   describe('handleQueryParameters', () => {
