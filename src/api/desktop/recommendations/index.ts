@@ -16,7 +16,7 @@ router.get(
   '/v1/recommendations',
   // request must include a consumer
   ConsumerKeyHandler,
-  CacheControlHandler('public, max-age=1800', config),
+  CacheControlHandler('public, max-age=900', config),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const variables = handleQueryParameters(req.query);
