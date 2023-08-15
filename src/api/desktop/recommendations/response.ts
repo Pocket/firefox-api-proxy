@@ -1,6 +1,6 @@
 import { NewTabRecommendationsQuery } from '../../../generated/graphql/types';
 import { components, paths } from '../../../generated/openapi/types';
-import { Logger } from '../../../logger';
+import { serverLogger } from '../../../server';
 import { Unpack } from '../../../types';
 
 // unpack GraphQL generated type for 'recommendations' from NewTabRecommendationsQuery
@@ -31,9 +31,7 @@ export const appendUtmSource = (url: string, utmSource: string): string => {
  */
 export const validateAndSetUtmSource = (utmSource?: string): string => {
   if (!utmSource) {
-    Logger(
-      'utmSource is undefined or null. Setting it to pocket-newtab'
-    ).error();
+    serverLogger.error('utmSource is undefined or null. Setting it to pocket-newtab');
 
     utmSource = 'pocket-newtab';
   }

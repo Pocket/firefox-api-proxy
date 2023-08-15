@@ -3,6 +3,7 @@ import express from 'express';
 import config from '../../config';
 import { consumer_key } from '../../auth/types';
 import { doForwardHeader } from '../../lib/headerUtils';
+import { serverLogger } from '../../server';
 
 /**
  * GraphQL Client doesn't export this type due to supporting arbitrary
@@ -101,6 +102,6 @@ export const forwardHeadersMiddleware =
         // I think all expected types are documented above, emit warning log
         // and we'll know we need to dig for more if it shows up. Unfortunately
         // graphResponse is probably just an object, but outputting what we can.
-        console.warn(`forwardHeadersMiddleware - encountered unexpected type: ${typeof graphResponse}`);
+        serverLogger.warn(`forwardHeadersMiddleware - encountered unexpected type`, {type: typeof graphResponse});
       }
     };

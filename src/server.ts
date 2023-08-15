@@ -1,7 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express';
 import http from 'http';
 import cookieParser from 'cookie-parser';
-import xrayExpress from 'aws-xray-sdk-express';
+// import xrayExpress from 'aws-xray-sdk-express';
 import * as Sentry from '@sentry/node';
 
 import { RestResponseError, SENTRY_BEHAVIOR } from './errors/restResponseError';
@@ -13,6 +13,9 @@ import {
   ErrorHandler,
   ErrorHandlerOptions,
 } from './errors/handlers/errorHandler';
+import { setLogger, setMorgan } from '@pocket-tools/ts-logger';
+
+export const serverLogger = setLogger();
 
 /**
  * This is a generic API server. See BFFFxServer.ts for the configuration
@@ -158,8 +161,9 @@ export const buildServer = (
   const httpServer = http.createServer(app);
 
   //If there is no host header (really there always should be..) then use parser-wrapper as the name
-  app.use(xrayExpress.openSegment(serviceName));
+  // app.use(xrayExpress.openSegment(serviceName));
 
+  app.use(setMorgan(serverLogger));
   // sentry middleware must be declared early
   app.use(
     Sentry.Handlers.requestHandler(
@@ -202,7 +206,7 @@ export const buildServer = (
   app.use(ErrorHandler(errorHandlerOptions) as express.ErrorRequestHandler);
 
   //Make sure the express app has the xray close segment handler
-  app.use(xrayExpress.closeSegment());
+  // app.use(xrayExpress.closeSegment());
 
   return { app, httpServer };
 };

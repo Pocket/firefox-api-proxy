@@ -6,6 +6,7 @@ import { GraphQLError } from 'graphql';
 import config from './config';
 import { buildBFFFxServer } from './bfffxServer';
 import { APIErrorResponse } from './bfffxError';
+import { serverLogger } from './server';
 
 /**
  * The intent of this test file is mostly to test error handling
@@ -20,10 +21,10 @@ import { APIErrorResponse } from './bfffxError';
 
 const { app } = buildBFFFxServer();
 
-// lots of log output here, mock console.error to suppress log
+// lots of log output here, mock serverLogger.error to suppress log
 // messages, and test what is logged in log tests below
-const consoleErrorMock = jest
-  .spyOn(console, 'error')
+const serverLoggerErrorMock = jest
+  .spyOn(serverLogger, 'error')
   .mockImplementation(() => null);
 
 const CONSUMER_KEY = 'fakeConsumerKey';
@@ -60,7 +61,7 @@ describe('BFFFxServer', () => {
   beforeEach(() => {
     // each test mocks its own responses in the test scope
     fetchMock.mockReset();
-    consoleErrorMock.mockReset();
+    serverLoggerErrorMock.mockReset();
   });
 
   describe('request headers', () => {
@@ -234,24 +235,31 @@ describe('BFFFxServer', () => {
         .send();
 
       // redacted errors get logged
-      expect(consoleErrorMock).toBeCalledTimes(1);
-      const call = consoleErrorMock.mock.calls[0][0];
-      // is a JSON document
-      const parsedLog: any = JSON.parse(call);
-      // log tags include request info
-      expect(parsedLog.logTags?.method).toEqual('GET');
-      expect(parsedLog.logTags?.path).toEqual('/desktop/v1/recent-saves');
-      expect(parsedLog.logTags?.query.includes(CONSUMER_KEY)).toBeTruthy();
-      expect(parsedLog.logTags?.query.includes('count')).toBeTruthy();
-      expect(parsedLog.logTags?.user?.id).toEqual(cookies.a95b4b6);
-      expect(parsedLog.message).toEqual('I might reveal library misuse');
-      expect(parsedLog.originalError?.message).toEqual(
-        'I might reveal library misuse'
-      );
-      // error class
-      expect(parsedLog.originalError?.name).toEqual('Error');
-      // includes stack trace
-      expect(parsedLog.originalError?.stack).toBeTruthy();
+      expect(serverLoggerErrorMock).toBeCalledTimes(1);
+      // using ts-ignore as call could be undefined when no errors
+      // TypeScript does not like ts-ignore delcared top of the file as it interferes with global eslint rules
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const call = serverLoggerErrorMock.mock?.calls[0][1];
+      // // log tags include request info
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      expect(call.tags?.method).toEqual('GET');
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      expect(call.tags?.path).toEqual('/desktop/v1/recent-saves');
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      expect(call.tags?.query.includes(CONSUMER_KEY)).toBeTruthy();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      expect(call.tags?.query.includes('count')).toBeTruthy();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      expect(call.tags?.user?.id).toEqual(cookies.a95b4b6);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      expect(call.error).toEqual('I might reveal library misuse');
     });
   });
 });
