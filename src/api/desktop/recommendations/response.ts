@@ -31,7 +31,9 @@ export const appendUtmSource = (url: string, utmSource: string): string => {
  */
 export const validateAndSetUtmSource = (utmSource?: string): string => {
   if (!utmSource) {
-    serverLogger.error('utmSource is undefined or null. Setting it to pocket-newtab');
+    serverLogger.error(
+      'utmSource is undefined or null. Setting it to pocket-newtab'
+    );
 
     utmSource = 'pocket-newtab';
   }

@@ -1,7 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import http from 'http';
 import cookieParser from 'cookie-parser';
-// import xrayExpress from 'aws-xray-sdk-express';
 import * as Sentry from '@sentry/node';
 
 import { RestResponseError, SENTRY_BEHAVIOR } from './errors/restResponseError';
@@ -160,9 +159,6 @@ export const buildServer = (
   const app = express();
   const httpServer = http.createServer(app);
 
-  //If there is no host header (really there always should be..) then use parser-wrapper as the name
-  // app.use(xrayExpress.openSegment(serviceName));
-
   app.use(setMorgan(serverLogger));
   // sentry middleware must be declared early
   app.use(
@@ -204,9 +200,6 @@ export const buildServer = (
 
   // default error handler, redacts unhandled errors
   app.use(ErrorHandler(errorHandlerOptions) as express.ErrorRequestHandler);
-
-  //Make sure the express app has the xray close segment handler
-  // app.use(xrayExpress.closeSegment());
 
   return { app, httpServer };
 };
