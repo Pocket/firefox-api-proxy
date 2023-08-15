@@ -22,7 +22,7 @@ describe('CacheControlHandler', () => {
     const config = getEnvironmentConfig('development');
 
     const app = express();
-    app.use(CacheControlHandler('private, max-age=1800', config));
+    app.use(CacheControlHandler('private, max-age=900', config));
     app.get('/', (req, res) => {
       res.status(200).json({ yay: true });
     });
@@ -36,7 +36,7 @@ describe('CacheControlHandler', () => {
   it('sets Cache-control header for other environments', async () => {
     const config = getEnvironmentConfig('production');
 
-    const headerValue = 'private, max-age=1800';
+    const headerValue = 'private, max-age=900';
 
     const app = express();
     app.use(CacheControlHandler(headerValue, config));
@@ -53,8 +53,8 @@ describe('CacheControlHandler', () => {
   it('the closest handler to route implementation sets Cache-control header if multiple exist', async () => {
     const config = getEnvironmentConfig('production');
 
-    const headerValue1 = 'private, max-age=1800';
-    const headerValue2 = 'max-age=1800';
+    const headerValue1 = 'private, max-age=900';
+    const headerValue2 = 'max-age=900';
 
     const app = express();
     app.use(CacheControlHandler(headerValue1, config));

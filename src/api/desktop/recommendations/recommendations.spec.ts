@@ -74,7 +74,7 @@ describe('recommendations API server', () => {
       .get(`/desktop/v1/recommendations?${params.toString()}`)
       .set(authHeaders)
       .send()
-      .expect('Cache-control', 'public, max-age=1800'); // assert the Cache-control header is overwritten by the /v1/recommendations route
+      .expect('Cache-control', 'public, max-age=900'); // assert the Cache-control header is overwritten by the /v1/recommendations route
 
     expect(res.status).toEqual(200);
 

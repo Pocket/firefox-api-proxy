@@ -60,7 +60,7 @@ describe('v3 legacy recommendations API server', () => {
     const res = await request(app)
       .get(`/v3/firefox/global-recs?${params.toString()}`)
       .send()
-      .expect('Cache-control', 'public, max-age=1800'); // assert the Cache-control header is overwritten by the global-recs route
+      .expect('Cache-control', 'public, max-age=900'); // assert the Cache-control header is overwritten by the global-recs route
 
     expect(res.status).toEqual(200);
 

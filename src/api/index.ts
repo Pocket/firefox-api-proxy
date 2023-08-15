@@ -14,7 +14,7 @@ router.use(
   WebSessionAuthHandler,
   // set Cache-control headers on all routes
   // this can be overwritten on downstream routes with another handler
-  CacheControlHandler('private, max-age=1800', config),
+  CacheControlHandler('private, max-age=900', config),
   // register Desktop sub-router
   Desktop
 );
@@ -26,7 +26,7 @@ router.use(
   WebSessionAuthHandler,
   // set Cache-control headers on all routes
   // this can be overwritten on downstream routes with another handler
-  CacheControlHandler('private, max-age=1800', config),
+  CacheControlHandler('private, max-age=900', config),
   // register legacy v3 sub-router
   V3
 );
