@@ -222,7 +222,19 @@ class Stack extends TerraformStack {
             effect: 'Allow',
           },
         ],
-        taskRolePolicyStatements: [{}],
+        taskRolePolicyStatements: [
+          {
+            actions: [
+              'xray:PutTraceSegments',
+              'xray:PutTelemetryRecords',
+              'xray:GetSamplingRules',
+              'xray:GetSamplingTargets',
+              'xray:GetSamplingStatisticSummaries',
+            ],
+            resources: ['*'],
+            effect: 'Allow',
+          },
+        ],
         taskExecutionDefaultAttachmentArn:
           'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy',
       },
