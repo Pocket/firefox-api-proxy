@@ -35,3 +35,6 @@ dist
 
 # JSON is required for some tools and may be generated, only check in and edit openapi.yml
 openapi.json
+
+# server logs
+logs

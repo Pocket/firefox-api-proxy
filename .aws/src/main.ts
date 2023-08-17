@@ -23,6 +23,7 @@ import {
 import { PagerdutyProvider } from '@cdktf/provider-pagerduty/lib/provider';
 import { LocalProvider } from '@cdktf/provider-local/lib/provider';
 import { NullProvider } from '@cdktf/provider-null/lib/provider';
+import { CloudwatchLogGroup } from '@cdktf/provider-aws/lib/cloudwatch-log-group';
 import * as fs from 'fs';
 
 class Stack extends TerraformStack {
@@ -169,24 +170,14 @@ class Stack extends TerraformStack {
               value: process.env.NODE_ENV, // this gives us a nice lowercase production and development
             },
           ],
+          logGroup: this.createCustomLogGroup('app'),
+          logMultilinePattern: '^\\S.+',
           secretEnvVars: [
             {
               name: 'SENTRY_DSN',
               valueFrom: `arn:aws:ssm:${region.name}:${caller.accountId}:parameter/${config.name}/${config.environment}/SENTRY_DSN`,
             },
           ],
-        },
-        {
-          name: 'xray-daemon',
-          containerImage: 'public.ecr.aws/xray/aws-xray-daemon:latest',
-          portMappings: [
-            {
-              hostPort: 2000,
-              containerPort: 2000,
-              protocol: 'udp',
-            },
-          ],
-          command: ['--region', 'us-east-1', '--local-mode'],
         },
       ],
       codeDeploy: {
@@ -281,7 +272,7 @@ class Stack extends TerraformStack {
    * @private
    */
   private createWafAcl() {
-    /* 
+    /*
     Rule 0: MozillaOpsSource
 
     Requests originating from Mozilla hosted Google CDNs include the following headers:
@@ -364,6 +355,25 @@ class Stack extends TerraformStack {
       },
       rule: [mozillaOpsSourceRule, globalRateLimitRule],
     });
+  }
+  /**
+   * Create Custom log group for ECS to share across task revisions
+   * @param containerName
+   * @private
+   */
+  private createCustomLogGroup(containerName: string) {
+    const logGroup = new CloudwatchLogGroup(
+      this,
+      `${containerName}-log-group`,
+      {
+        name: `/Backend/${config.prefix}/ecs/${containerName}`,
+        retentionInDays: 90,
+        skipDestroy: true,
+        tags: config.tags,
+      }
+    );
+
+    return logGroup.name;
   }
 }
 
