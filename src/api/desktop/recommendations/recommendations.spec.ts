@@ -5,7 +5,6 @@ import RecommendationsMock from '../../../graphql-proxy/recommendations/__mocks_
 
 import config from '../../../config';
 import { buildBFFFxServer } from '../../../bfffxServer';
-import { WebAuth } from '../../../auth/types';
 
 import { components } from '../../../generated/openapi/types';
 type Recommendation = components['schemas']['Recommendation'];
@@ -22,8 +21,6 @@ type Recommendation = components['schemas']['Recommendation'];
 const { app } = buildBFFFxServer();
 
 const CONSUMER_KEY = 'fakeConsumerKey';
-const buildGraphUrl = () =>
-  `${config.app.graphGatewayUrl}?consumer_key=${CONSUMER_KEY}&enable_cors=1`;
 
 // generic auth cookies
 const cookies = {
@@ -47,16 +44,12 @@ describe('recommendations API server', () => {
 
   it('transforms graphql responses to server responses', async () => {
     const mockResponse = await RecommendationsMock({
-      // auth components and middlewares are unimportant to mocks,
-      // just mock them
-      auth: { junk: 'junk' } as unknown as WebAuth,
-      consumer_key: 'junkConsumerKey',
-      forwardHeadersMiddleware: () => null,
-      // provide real variables
-      variables: { count: 1, locale: 'it', region: 'IT' },
+      count: 1,
+      locale: 'it',
+      region: 'IT',
     });
 
-    fetchMock.mock(buildGraphUrl(), {
+    fetchMock.mock(config.app.clientApiGraphGatewayUrl, {
       status: 200,
       body: {
         data: mockResponse,

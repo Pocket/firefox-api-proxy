@@ -5,7 +5,6 @@ import RecommendationsMock from '../../graphql-proxy/recommendations/__mocks__/r
 
 import config from '../../config';
 import { buildBFFFxServer } from '../../bfffxServer';
-import { WebAuth } from '../../auth/types';
 
 import { components } from '../../generated/openapi/types';
 type LegacyFeedItem = components['schemas']['LegacyFeedItem'];
@@ -22,8 +21,6 @@ type LegacyFeedItem = components['schemas']['LegacyFeedItem'];
 const { app } = buildBFFFxServer();
 
 const CONSUMER_KEY = 'fakeConsumerKey';
-const buildGraphUrl = () =>
-  `${config.app.graphGatewayUrl}?consumer_key=${CONSUMER_KEY}&enable_cors=1`;
 
 describe('v3 legacy recommendations API server', () => {
   beforeEach(() => {
@@ -33,16 +30,12 @@ describe('v3 legacy recommendations API server', () => {
 
   it('transforms graphql responses to server responses', async () => {
     const mockResponse = await RecommendationsMock({
-      // auth components and middlewares are unimportant to mocks,
-      // just mock them
-      auth: { junk: 'junk' } as unknown as WebAuth,
-      consumer_key: 'junkConsumerKey',
-      forwardHeadersMiddleware: () => null,
-      // provide real variables
-      variables: { count: 1, locale: 'it', region: 'IT' },
+      count: 1,
+      locale: 'it',
+      region: 'IT',
     });
 
-    fetchMock.mock(buildGraphUrl(), {
+    fetchMock.mock(config.app.clientApiGraphGatewayUrl, {
       status: 200,
       body: {
         data: mockResponse,
@@ -51,7 +44,7 @@ describe('v3 legacy recommendations API server', () => {
     });
 
     const params = new URLSearchParams();
-    params.append('consumer_key', CONSUMER_KEY);
+    params.append('consumer_key', CONSUMER_KEY); // No longer used for auth
     params.append('version', '3');
     params.append('count', '1');
     params.append('locale_lang', 'it');

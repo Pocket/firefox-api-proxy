@@ -1,17 +1,10 @@
-import { webProxyClient } from '../lib/client';
-
 import {
   NewTabRecommendationsDocument,
   NewTabRecommendationsQuery,
   NewTabRecommendationsQueryVariables,
 } from '../../generated/graphql/types';
-import { ClientParameters } from '../types';
-
-/**
- * recommendations.ts GraphQL client request parameters
- */
-export type RecommendationsParameters =
-  ClientParameters<NewTabRecommendationsQueryVariables>;
+import { GraphQLClient } from 'graphql-request';
+import config from '../../config';
 
 /**
  * This client performs the query specified in Recommendations.graphql, utilizing
@@ -22,14 +15,16 @@ export type RecommendationsParameters =
  * This client does not validate inputs. It is expected that route handlers will
  * validate and transform any URL parameters, query parameters, and payloads.
  */
-const Recommendations = async ({
-  auth,
-  consumer_key,
-  forwardHeadersMiddleware,
-  variables,
-}: RecommendationsParameters) => {
-  const client = webProxyClient(consumer_key, forwardHeadersMiddleware);
-  auth.authenticateClient(client);
+const Recommendations = async (
+  variables: NewTabRecommendationsQueryVariables
+) => {
+  const client = new GraphQLClient(config.app.clientApiGraphGatewayUrl, {
+    fetch,
+    // baseline headers for all requests
+    headers: {
+      'apollographql-client-name': config.app.clientName,
+    },
+  });
 
   return client.request<
     NewTabRecommendationsQuery,
