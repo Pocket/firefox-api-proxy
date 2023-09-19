@@ -8,8 +8,10 @@ import { faker } from '@faker-js/faker';
 
 import common from '../../__mocks__/common';
 
-import { NewTabRecommendationsQuery } from '../../../generated/graphql/types';
-import { RecommendationsParameters } from '../recommendations';
+import {
+  NewTabRecommendationsQuery,
+  NewTabRecommendationsQueryVariables,
+} from '../../../generated/graphql/types';
 import { GraphRecommendation } from '../../../api/desktop/recommendations/response';
 
 /**
@@ -67,12 +69,9 @@ const fakeRecommendations = (
     );
 };
 
-const recommendations = async ({
-  auth,
-  consumer_key,
-  forwardHeadersMiddleware,
-  variables,
-}: RecommendationsParameters): Promise<NewTabRecommendationsQuery> => {
+const recommendations = async (
+  variables: NewTabRecommendationsQueryVariables
+): Promise<NewTabRecommendationsQuery> => {
   // set faker locale based on variables
   // default to english if unrecognized, roughly matches graph behavior selecting locale.
   const fakerLocale = fakerLocales[variables.locale.toLowerCase()] ?? 'en';

@@ -48,7 +48,7 @@ export const webProxyClient = (
       fetch,
       // baseline headers for all requests
       headers: {
-        'apollographql-client-name': 'firefox-api-proxy',
+        'apollographql-client-name': config.app.clientApiName,
       },
       responseMiddleware: forwardHeadersMiddleware,
     }

@@ -3,7 +3,6 @@ import Ajv, { DefinedError } from 'ajv';
 import OpenApiSpec from '../OpenAPISpec';
 import Recommendations from '../../graphql-proxy/recommendations/recommendations';
 import { responseTransformer } from './response';
-import { WebAuth } from '../../auth/types';
 
 jest.mock('../../graphql-proxy/recommendations/recommendations');
 
@@ -29,17 +28,9 @@ describe('response', () => {
     it('handles happy path results', async () => {
       // the default mock is happy path, ensure this is handled
       const graphResponse = await Recommendations({
-        // auth components and middlewares are unimportant to mocks
-        // just mock them
-        auth: { junk: 'junk' } as unknown as WebAuth,
-        consumer_key: 'junkConsumerKey',
-        forwardHeadersMiddleware: () => null,
-        // provide real variables
-        variables: {
-          count: 30,
-          locale: 'fr',
-          region: 'FR',
-        },
+        count: 30,
+        locale: 'fr',
+        region: 'FR',
       });
 
       const res = responseTransformer(graphResponse);

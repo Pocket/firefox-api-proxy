@@ -4,8 +4,12 @@ export default {
     environment: process.env.NODE_ENV || 'development',
     defaultMaxAge: 86400,
     port: 4028,
+    clientApiName: 'firefox-api-proxy',
     graphGatewayUrl:
       process.env.GRAPH_GATEWAY_URL || 'https://getpocket.com/graphql',
+    clientApiGraphGatewayUrl:
+      process.env.CLIENT_API_GRAPH_GATEWAY_URL ||
+      'https://client-api.getpocket.com',
   },
   sentry: {
     dsn: process.env.SENTRY_DSN || '',
