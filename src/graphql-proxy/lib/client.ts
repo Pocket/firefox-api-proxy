@@ -48,7 +48,7 @@ export const webProxyClient = (
       fetch,
       // baseline headers for all requests
       headers: {
-        'apollographql-client-name': config.app.clientApiName,
+        'apollographql-client-name': config.app.clientName,
       },
       responseMiddleware: forwardHeadersMiddleware,
     }

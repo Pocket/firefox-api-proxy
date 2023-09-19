@@ -4,7 +4,7 @@ export default {
     environment: process.env.NODE_ENV || 'development',
     defaultMaxAge: 86400,
     port: 4028,
-    clientApiName: 'firefox-api-proxy',
+    clientName: 'firefox-api-proxy',
     graphGatewayUrl:
       process.env.GRAPH_GATEWAY_URL || 'https://getpocket.com/graphql',
     clientApiGraphGatewayUrl:

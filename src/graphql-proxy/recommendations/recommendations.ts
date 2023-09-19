@@ -22,7 +22,7 @@ const Recommendations = async (
     fetch,
     // baseline headers for all requests
     headers: {
-      'apollographql-client-name': config.app.clientApiName,
+      'apollographql-client-name': config.app.clientName,
     },
   });
 
