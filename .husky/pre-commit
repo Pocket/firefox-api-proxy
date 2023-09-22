@@ -1,7 +1,25 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+echo "+------------------------------+"
+echo "|     Run Test                 |"
+echo "+------------------------------+"
 npm test
+
+echo "+------------------------------+"
+echo "|     Code generation          |"
+echo "+------------------------------+"
+npm run codegen
+
+# If codegen makes any changes, they need to be committed by the developer.
+if ! git diff --exit-code -- ':**/generated/**'; then
+  echo "\033[31mThe codegen step produced changes. Please review and commit them.\033[0m"
+  exit 1
+fi
+
+echo "+------------------------------+"
+echo "|     Linting                  |"
+echo "+------------------------------+"
 #can add integration test and other commands based on the need
 echo "running lint-fix in: $(pwd)"
 npm run lint-fix
@@ -10,3 +28,7 @@ npm run lint-openapi
 cd .aws
 echo "running lint-fix in: $(pwd)"
 npm run lint-fix
+
+echo "\033[32m+------------------------------+\033[0m"
+echo "\033[32m|     Commit successful ✅     |\033[0m"
+echo "\033[32m+------------------------------+\033[0m"

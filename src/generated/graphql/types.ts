@@ -1575,6 +1575,8 @@ export type Query = {
    * @deprecated Use `getSlateLineup` with a specific SlateLineup instead.
    */
   listTopics: Array<Topic>;
+  /** ----- In Development (2023-08-16) -----Get a slate of ranked recommendations for the MozSocial. */
+  mozSocialSlate: CorpusSlate;
   /** Get a slate of ranked recommendations for the Firefox New Tab. Currently supports the Italy, France, and Spain markets. */
   newTabSlate: CorpusSlate;
   /** List all topics that the user can express a preference for. */
@@ -1724,6 +1726,16 @@ export type QueryItemByItemIdArgs = {
  */
 export type QueryItemByUrlArgs = {
   url: Scalars['String'];
+};
+
+
+/**
+ * Default root level query type. All authorization checks are done in these queries.
+ * TODO: These belong in a seperate User Service that provides a User object (the user settings will probably exist there too)
+ */
+export type QueryMozSocialSlateArgs = {
+  locale: Scalars['String'];
+  region?: InputMaybe<Scalars['String']>;
 };
 
 
