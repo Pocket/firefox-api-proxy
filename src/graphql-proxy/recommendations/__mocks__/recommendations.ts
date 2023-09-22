@@ -35,6 +35,7 @@ const fakerLocales = {
 const fakeRecommendation = (hasTimeToRead = true): GraphRecommendation => {
   const recommendationWithoutTimeToRead: GraphRecommendation = {
     __typename: 'CorpusRecommendation',
+    id: faker.datatype.uuid(),
     tileId: faker.datatype.number(),
     corpusItem: {
       excerpt: common.itemExcerpt(),
