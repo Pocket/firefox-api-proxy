@@ -323,8 +323,11 @@ class Stack extends TerraformStack {
     AWS and GCP. Leaving this limit relatively permissive to allow devs and testing
     infrastructure to hit firefox-api-proxy directly bypassing caching.
 
-    If needed, this limit can be decreased. All firefox client traffic should be though
-    the CDN soon (still a nightly release hitting this service directly floating around).
+    https://docs.google.com/document/d/1EwCjt5rivBDFt1XaBig0atDSvycKD6_HcOeqiuLyNnQ
+    Between 2023-09-11 and 2023-09-25 there was a increase in requests to 3000 RPM
+    hitting the backend. The spike seemed to be coming from old ESR versins running
+    on corporate networks, going through our CDN as expected. We did not see any sign
+    of malicious intent. We successfully completed a load test for 4000 RPM in MC-135.
     */
     const globalRateLimitRule = <Wafv2WebAclRule>{
       name: 'GlobalRateLimit',
@@ -332,7 +335,7 @@ class Stack extends TerraformStack {
       action: { block: {} },
       statement: {
         rateBasedStatement: {
-          limit: 1000,
+          limit: 4000,
           aggregateKeyType: 'IP',
         },
       },
