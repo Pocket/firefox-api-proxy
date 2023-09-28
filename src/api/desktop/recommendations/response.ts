@@ -46,6 +46,7 @@ export const mapRecommendation = (
 ): Recommendation => {
   const recommendationToReturn: Recommendation = {
     __typename: 'Recommendation',
+    id: recommendation.id,
     tileId: recommendation.tileId,
     url: appendUtmSource(
       recommendation.corpusItem.url,

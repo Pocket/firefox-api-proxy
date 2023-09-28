@@ -2,6 +2,7 @@ query NewTabRecommendations($locale: String!, $region: String, $count: Int) {
   newTabSlate(locale: $locale, region: $region) {
     utmSource
     recommendations(count: $count) {
+      id
       tileId
       corpusItem {
         excerpt

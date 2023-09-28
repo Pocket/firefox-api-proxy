@@ -134,9 +134,13 @@ components:
           description: Constant identifier for Recommendation type objects.
           enum:
             - Recommendation
+        id:
+          type: string
+          description: String identifier for the Recommendation. This value is expected to be different on each request.
         tileId:
           type: number
-          description: Numerical identifier for the Recommendation. This is specifically a number for Fx client and Mozilla data pipeline compatibility.
+          deprecated: true
+          description: Numerical identifier for the Recommendation. This is specifically a number for Fx client and Mozilla data pipeline compatibility. This property will continue to be present because Firefox clients depend on it, but downstream users should use the recommendation id instead when available.
         url:
           type: string
           description: The URL the Recommendation.
