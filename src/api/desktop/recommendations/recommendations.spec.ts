@@ -79,7 +79,7 @@ describe('recommendations API server', () => {
     // not checking exhaustively, just some general mapping
     // response.spec.ts is responsible for keeping these in sync.
     expect(recommendation.__typename).toEqual('Recommendation');
-    expect(recommendation.id).toEqual(
+    expect(recommendation.recommendationId).toEqual(
       mockResponse.newTabSlate.recommendations[0].id
     );
     expect(recommendation.tileId).toEqual(

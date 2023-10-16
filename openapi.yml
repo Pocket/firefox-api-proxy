@@ -134,7 +134,7 @@ components:
           description: Constant identifier for Recommendation type objects.
           enum:
             - Recommendation
-        id:
+        recommendationId:
           type: string
           description: String identifier for the Recommendation. This value is expected to be different on each request.
         tileId:
