@@ -233,7 +233,7 @@ export interface operations {
         };
       };
       /** @description Invalid request parameters */
-      400: {
+      404: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -274,14 +274,14 @@ export interface operations {
           };
         };
       };
-      /** @description Invalid request parameters */
-      400: {
+      /** @description Authorization is missing or invalid. */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
-      /** @description Authorization is missing or invalid. */
-      401: {
+      /** @description Invalid request parameters */
+      404: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };

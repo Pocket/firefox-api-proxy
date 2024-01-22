@@ -411,7 +411,7 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/LegacyFeedItem'
-        '400':
+        '404':
           description: Invalid request parameters
           content:
             application/json:
@@ -474,7 +474,7 @@ paths:
                       oneOf:
                         - $ref: '#/components/schemas/Save'
                         - $ref: '#/components/schemas/PendingSave'
-        '400':
+        '404':
           description: Invalid request parameters
           content:
             application/json:

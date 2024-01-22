@@ -142,13 +142,13 @@ export const validate = (
   if (errorDetails.length > 0) {
     // return an error result including each failed validation
     const error = new BFFFxError('input validation failure', {
-      status: 400,
+      status: 404,
       jsonResponse: {
         errors: errorDetails.map((ed) => ({
           // this id is just a static identifier for this error
           // so developers can search for more context
           id: '82868c64-41f1-4efe-b936-cef5261d0d87',
-          status: '400',
+          status: '404',
           title: 'Bad Request',
           detail: ed.errorDetail,
           source: {

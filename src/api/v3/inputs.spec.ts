@@ -53,7 +53,7 @@ describe('input.ts recommendations query parameters', () => {
         expect.objectContaining<APIErrorResponse>({
           errors: expect.arrayContaining<Array<APIError>>([
             expect.objectContaining<APIError>({
-              status: '400',
+              status: '404',
               title: 'Bad Request',
             }),
           ]),
