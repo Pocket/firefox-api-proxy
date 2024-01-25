@@ -232,8 +232,8 @@ export interface operations {
           };
         };
       };
-      /** @description Invalid request parameters */
-      400: {
+      /** @description Invalid request parameters. Originally this was a 400 but to allow for caching via https://cloud.google.com/cdn/docs/using-negative-caching it is now a 404. */
+      404: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -274,14 +274,14 @@ export interface operations {
           };
         };
       };
-      /** @description Invalid request parameters */
-      400: {
+      /** @description Authorization is missing or invalid. */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
-      /** @description Authorization is missing or invalid. */
-      401: {
+      /** @description Invalid request parameters. Originally this was a 400 but to allow for caching via https://cloud.google.com/cdn/docs/using-negative-caching it is now a 404. */
+      404: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };

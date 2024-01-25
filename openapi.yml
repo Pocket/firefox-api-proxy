@@ -411,8 +411,8 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/LegacyFeedItem'
-        '400':
-          description: Invalid request parameters
+        '404':
+          description: Invalid request parameters. Originally this was a 400 but to allow for caching via https://cloud.google.com/cdn/docs/using-negative-caching it is now a 404.
           content:
             application/json:
               schema:
@@ -474,8 +474,8 @@ paths:
                       oneOf:
                         - $ref: '#/components/schemas/Save'
                         - $ref: '#/components/schemas/PendingSave'
-        '400':
-          description: Invalid request parameters
+        '404':
+          description: Invalid request parameters. Originally this was a 400 but to allow for caching via https://cloud.google.com/cdn/docs/using-negative-caching it is now a 404.
           content:
             application/json:
               schema:

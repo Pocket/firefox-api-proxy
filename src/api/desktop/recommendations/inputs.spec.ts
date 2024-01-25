@@ -126,7 +126,7 @@ describe('input.ts recommendations query parameters', () => {
           // array contains multiple errors, check for each
           errors: expect.arrayContaining<Array<APIError>>([
             expect.objectContaining<APIError>({
-              status: '400',
+              status: '404',
               title: 'Bad Request',
               detail: 'The count query parameter must be >0 and <=30',
               source: {
@@ -134,7 +134,7 @@ describe('input.ts recommendations query parameters', () => {
               },
             }),
             expect.objectContaining<APIError>({
-              status: '400',
+              status: '404',
               title: 'Bad Request',
               detail:
                 'Locale must be provided. Valid locales include: [' +
@@ -161,7 +161,7 @@ describe('input.ts recommendations query parameters', () => {
           // array contains multiple errors, check for each
           errors: expect.arrayContaining<Array<APIError>>([
             expect.objectContaining<APIError>({
-              status: '400',
+              status: '404',
               title: 'Bad Request',
               detail:
                 'Locale must be provided. Valid locales include: [' +
@@ -190,7 +190,7 @@ describe('input.ts recommendations query parameters', () => {
         expect.objectContaining<APIErrorResponse>({
           errors: expect.arrayContaining<Array<APIError>>([
             expect.objectContaining<APIError>({
-              status: '400',
+              status: '404',
               title: 'Bad Request',
             }),
           ]),
