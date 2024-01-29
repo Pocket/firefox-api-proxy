@@ -58,12 +58,12 @@ export const mapRecommendation = (
     imageUrl: recommendation.corpusItem.imageUrl,
   };
 
-  if (recommendation.corpusItem.timeToRead) {
-    return {
-      ...recommendationToReturn,
-      timeToRead: recommendation.corpusItem.timeToRead,
-    };
-  }
+  // if (recommendation.corpusItem.timeToRead) {
+  //   return {
+  //     ...recommendationToReturn,
+  //     timeToRead: recommendation.corpusItem.timeToRead,
+  //   };
+  // }
 
   return recommendationToReturn;
 };

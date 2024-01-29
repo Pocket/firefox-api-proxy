@@ -10,7 +10,7 @@ query NewTabRecommendations($locale: String!, $region: String, $count: Int) {
         publisher
         title
         url
-        timeToRead
+        # timeToRead
       }
     }
   }
