@@ -997,6 +997,14 @@ export type Mutation = {
   /** 'Unfavorite' a 'favorite' SavedItem (identified by URL) */
   savedItemUnFavorite?: Maybe<SavedItem>;
   /**
+   * Update the title display of a Saved Item, retrieved by URL.
+   * This is user-save specific (does not update the metadata saved by the parser)
+   * Clients should ensure the input fits in the utf8mb3 character set (BMP only,
+   * which means no emoji) to avoid being rejected by the database.
+   * In the future this will be more permissive.
+   */
+  savedItemUpdateTitle?: Maybe<SavedItem>;
+  /**
    * Update an existing highlight annotation, by its ID.
    * If the given highlight ID does not exist, will return error data
    * and the highlight will not be created.
@@ -1036,6 +1044,14 @@ export type Mutation = {
    * @deprecated use saveBatchUpdateTags
    */
   updateSavedItemTags: SavedItem;
+  /**
+   * Update the title display of a Saved Item, retrieved by ID.
+   * This is user-save specific (does not update the metadata saved by the parser).
+   * Clients should ensure the input fits in the utf8mb3 character set (BMP only,
+   * which means no emoji) to avoid being rejected by the database.
+   * In the future this will be more permissive.
+   */
+  updateSavedItemTitle?: Maybe<SavedItem>;
   /** Unarchives a SavedItem */
   updateSavedItemUnArchive: SavedItem;
   /** Undo the delete operation for a SavedItem */
@@ -1280,6 +1296,14 @@ export type MutationSavedItemUnFavoriteArgs = {
 
 
 /** Default Mutation Type */
+export type MutationSavedItemUpdateTitleArgs = {
+  givenUrl: Scalars['Url'];
+  timestamp: Scalars['ISOString'];
+  title: Scalars['String'];
+};
+
+
+/** Default Mutation Type */
 export type MutationUpdateHighlightArgs = {
   id: Scalars['ID'];
   input: UpdateHighlightInput;
@@ -1321,6 +1345,14 @@ export type MutationUpdateSavedItemRemoveTagsArgs = {
 /** Default Mutation Type */
 export type MutationUpdateSavedItemTagsArgs = {
   input: SavedItemTagUpdateInput;
+};
+
+
+/** Default Mutation Type */
+export type MutationUpdateSavedItemTitleArgs = {
+  id: Scalars['ID'];
+  timestamp: Scalars['ISOString'];
+  title: Scalars['String'];
 };
 
 
@@ -2000,11 +2032,7 @@ export type SavedItem = RemoteEntity & {
   suggestedTags?: Maybe<Array<Tag>>;
   /** The Tags associated with this SavedItem */
   tags?: Maybe<Array<Tag>>;
-  /**
-   * The title for user saved item. Set by the user and if not, set by the parser.
-   * For third party clients use-case only.
-   * @deprecated internal clients must use item.title
-   */
+  /** The title for user saved item. Set by the user and if not, set by the parser. */
   title?: Maybe<Scalars['String']>;
   /** The url the user saved to their list */
   url: Scalars['String'];
@@ -3044,8 +3072,8 @@ export type NewTabRecommendationsQueryVariables = Exact<{
 }>;
 
 
-export type NewTabRecommendationsQuery = { __typename?: 'Query', newTabSlate: { __typename?: 'CorpusSlate', utmSource?: string | null, recommendations: Array<{ __typename?: 'CorpusRecommendation', id: string, tileId: number, corpusItem: { __typename?: 'CorpusItem', excerpt: string, imageUrl: any, publisher: string, title: string, url: any, timeToRead?: number | null } }> } };
+export type NewTabRecommendationsQuery = { __typename?: 'Query', newTabSlate: { __typename?: 'CorpusSlate', utmSource?: string | null, recommendations: Array<{ __typename?: 'CorpusRecommendation', id: string, tileId: number, corpusItem: { __typename?: 'CorpusItem', excerpt: string, imageUrl: any, publisher: string, title: string, url: any } }> } };
 
 
 export const RecentSavesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"RecentSaves"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"savedItems"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"statuses"},"value":{"kind":"ListValue","values":[{"kind":"EnumValue","value":"UNREAD"}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"sort"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"sortBy"},"value":{"kind":"EnumValue","value":"CREATED_AT"}},{"kind":"ObjectField","name":{"kind":"Name","value":"sortOrder"},"value":{"kind":"EnumValue","value":"DESC"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"item"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Item"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordCount"}},{"kind":"Field","name":{"kind":"Name","value":"topImage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}}]}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"timeToRead"}},{"kind":"Field","name":{"kind":"Name","value":"resolvedUrl"}},{"kind":"Field","name":{"kind":"Name","value":"givenUrl"}},{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"domain"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<RecentSavesQuery, RecentSavesQueryVariables>;
-export const NewTabRecommendationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NewTabRecommendations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locale"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"region"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"count"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"newTabSlate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}},{"kind":"Argument","name":{"kind":"Name","value":"region"},"value":{"kind":"Variable","name":{"kind":"Name","value":"region"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"utmSource"}},{"kind":"Field","name":{"kind":"Name","value":"recommendations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"count"},"value":{"kind":"Variable","name":{"kind":"Name","value":"count"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"tileId"}},{"kind":"Field","name":{"kind":"Name","value":"corpusItem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"publisher"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"timeToRead"}}]}}]}}]}}]}}]} as unknown as DocumentNode<NewTabRecommendationsQuery, NewTabRecommendationsQueryVariables>;
+export const NewTabRecommendationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NewTabRecommendations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locale"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"region"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"count"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"newTabSlate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}},{"kind":"Argument","name":{"kind":"Name","value":"region"},"value":{"kind":"Variable","name":{"kind":"Name","value":"region"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"utmSource"}},{"kind":"Field","name":{"kind":"Name","value":"recommendations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"count"},"value":{"kind":"Variable","name":{"kind":"Name","value":"count"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"tileId"}},{"kind":"Field","name":{"kind":"Name","value":"corpusItem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"publisher"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]}}]}}]} as unknown as DocumentNode<NewTabRecommendationsQuery, NewTabRecommendationsQueryVariables>;
