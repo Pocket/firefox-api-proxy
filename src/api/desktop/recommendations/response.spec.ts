@@ -43,11 +43,7 @@ describe('response', () => {
             `utm_source=${graphResponse.newTabSlate.utmSource}`
           )
         ).toBeTruthy();
-        // Even recommendations have timeToRead mocked to [1, 9].
-        //expect(res.data[0].timeToRead).toBeGreaterThanOrEqual(1);
-        //expect(res.data[0].timeToRead).toBeLessThanOrEqual(9);
         expect(res.data[0].timeToRead).toBeUndefined();
-        // Odd recommendations have timeToRead mocked to undefined.
         expect(res.data[1].timeToRead).toBeUndefined();
       } else {
         throw validate.errors;
