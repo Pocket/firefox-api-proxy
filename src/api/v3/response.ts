@@ -37,13 +37,6 @@ export const mapRecommendation = (
     image_src: `https://img-getpocket.cdn.mozilla.net/direct?url=${encodedImageUrl}&resize=w450`,
   };
 
-  // if (recommendation.corpusItem.timeToRead) {
-  //   return {
-  //     ...feedItemToReturn,
-  //     time_to_read: recommendation.corpusItem.timeToRead,
-  //   };
-  // }
-
   return feedItemToReturn;
 };
 

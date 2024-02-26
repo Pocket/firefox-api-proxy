@@ -26,6 +26,21 @@ export type Scalars = {
   Url: any;
 };
 
+/**
+ * Input data for adding multiple items to a list.
+ * Appends to the end of the list.
+ */
+export type AddItemInput = {
+  authors?: InputMaybe<Scalars['String']>;
+  excerpt?: InputMaybe<Scalars['String']>;
+  imageUrl?: InputMaybe<Scalars['Url']>;
+  itemId: Scalars['ID'];
+  note?: InputMaybe<Scalars['String']>;
+  publisher?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
+  url: Scalars['Url'];
+};
+
 export type AdvancedSearchFilters = {
   contentType?: InputMaybe<SearchItemsContentType>;
   domain?: InputMaybe<Scalars['String']>;
@@ -801,6 +816,26 @@ export type ListElement = {
   level: Scalars['Int'];
 };
 
+/** The Connection type for ListItem */
+export type ListItemConnection = {
+  __typename?: 'ListItemConnection';
+  /** A list of edges. */
+  edges?: Maybe<Array<ListItemEdge>>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** Identifies the total count of SavedItems in the connection. */
+  totalCount: Scalars['Int'];
+};
+
+/** An Edge in a Connection */
+export type ListItemEdge = {
+  __typename?: 'ListItemEdge';
+  /** A cursor for use in pagination. */
+  cursor: Scalars['String'];
+  /** The ListItem at the end of the edge. */
+  node: ShareableListItem;
+};
+
 export type MarkdownImagePosition = {
   __typename?: 'MarkdownImagePosition';
   index: Scalars['Int'];
@@ -874,11 +909,15 @@ export type MarticleText = {
 /** Default Mutation Type */
 export type Mutation = {
   __typename?: 'Mutation';
+  /** Add a batch of items to an existing shareable list. */
+  addToShareableList: ShareableList;
   /**
    * Make requests to create and delete highlights in a single batch.
    * Mutation is atomic -- if there is a response, all operations were successful.
    */
   batchWriteHighlights: BatchWriteHighlightsResult;
+  /** Add a batch of items to an existing shareable list. */
+  createAndAddToShareableList?: Maybe<ShareableList>;
   /** Create new highlight note. Returns the data for the created Highlight note. */
   createSavedItemHighlightNote?: Maybe<HighlightNote>;
   /** Create new highlight annotation(s). Returns the data for the created Highlight object(s). */
@@ -1093,8 +1132,22 @@ export type Mutation = {
 
 
 /** Default Mutation Type */
+export type MutationAddToShareableListArgs = {
+  items: Array<AddItemInput>;
+  listExternalId: Scalars['ID'];
+};
+
+
+/** Default Mutation Type */
 export type MutationBatchWriteHighlightsArgs = {
   input?: InputMaybe<BatchWriteHighlightsInput>;
+};
+
+
+/** Default Mutation Type */
+export type MutationCreateAndAddToShareableListArgs = {
+  itemData: Array<AddItemInput>;
+  listData: CreateShareableListInput;
 };
 
 
@@ -1438,6 +1491,14 @@ export type NumberedListElement = ListElement & {
   index: Scalars['Int'];
   /** Zero-indexed level, for handling nested lists. */
   level: Scalars['Int'];
+};
+
+/** Input for offset-pagination (internal backend use only). */
+export type OffsetPaginationInput = {
+  /**  Defaults to 30  */
+  limit?: InputMaybe<Scalars['Int']>;
+  /**  Defaults to 0  */
+  offset?: InputMaybe<Scalars['Int']>;
 };
 
 /** Information about pagination in a connection. */
@@ -2228,6 +2289,15 @@ export type SavedItemsFilter = {
   updatedSince?: InputMaybe<Scalars['Int']>;
 };
 
+/** A page of SavedItems, retrieved by offset-based pagination. */
+export type SavedItemsPage = {
+  __typename?: 'SavedItemsPage';
+  entries: Array<SavedItem>;
+  limit: Scalars['Int'];
+  offset: Scalars['Int'];
+  totalCount: Scalars['Int'];
+};
+
 /** Input to sort fetched SavedItems. If unspecified, defaults to CREATED_AT, ASC. */
 export type SavedItemsSort = {
   /** The field by which to sort SavedItems */
@@ -2439,9 +2509,14 @@ export type ShareableList = {
   description?: Maybe<Scalars['String']>;
   /** A unique string identifier in UUID format. */
   externalId: Scalars['ID'];
+  /** Pocket Saves that have been added to this list by the Pocket user. */
+  items: ListItemConnection;
   /** The visibility of notes added to list items for this list. */
   listItemNoteVisibility: ShareableListVisibility;
-  /** Pocket Saves that have been added to this list by the Pocket user. */
+  /**
+   * Pocket Saves that have been added to this list by the Pocket user.
+   * @deprecated use items
+   */
   listItems: Array<ShareableListItem>;
   /** The moderation status of the list. Defaults to VISIBLE. */
   moderationStatus: ShareableListModerationStatus;
@@ -2461,6 +2536,12 @@ export type ShareableList = {
   updatedAt: Scalars['ISOString'];
   /** The user who created this shareable list. */
   user: User;
+};
+
+
+/** A user-created list of Pocket saves that can be shared publicly. */
+export type ShareableListItemsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
 };
 
 /** A Pocket Save (story) that has been added to a Shareable List. */
@@ -2942,6 +3023,8 @@ export type User = {
   savedItemById?: Maybe<SavedItem>;
   /** Get a general paginated listing of all SavedItems for the user */
   savedItems?: Maybe<SavedItemConnection>;
+  /** Fetch SavedItems with offset pagination. Internal backend use only. */
+  savedItemsByOffset?: Maybe<SavedItemsPage>;
   /**
    * Premium search query. Name will be updated after client input
    * @deprecated Use searchSavedItems
@@ -2981,6 +3064,14 @@ export type UserSavedItemByIdArgs = {
 export type UserSavedItemsArgs = {
   filter?: InputMaybe<SavedItemsFilter>;
   pagination?: InputMaybe<PaginationInput>;
+  sort?: InputMaybe<SavedItemsSort>;
+};
+
+
+/** Resolve by reference the User entity in this graph to provide user data with public lists. */
+export type UserSavedItemsByOffsetArgs = {
+  filter?: InputMaybe<SavedItemsFilter>;
+  pagination?: InputMaybe<OffsetPaginationInput>;
   sort?: InputMaybe<SavedItemsSort>;
 };
 
