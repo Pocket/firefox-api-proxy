@@ -31,7 +31,6 @@ const fakeSaves = (count): RecentSavesQuery['user']['savedItems']['edges'] => {
             url: common.itemImage(),
           },
           title: common.itemTitle(),
-          timeToRead: faker.datatype.number({ max: 15 }),
           resolvedUrl: common.itemUrl(),
           givenUrl: common.itemUrl(),
           excerpt: common.itemExcerpt(),

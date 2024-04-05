@@ -85,8 +85,5 @@ describe('recommendations API server', () => {
     expect(recommendation.tileId).toEqual(
       mockResponse.newTabSlate.recommendations[0].tileId
     );
-    if (recommendation.timeToRead !== undefined) {
-      expect(recommendation.timeToRead).toBeGreaterThanOrEqual(1);
-    }
   });
 });

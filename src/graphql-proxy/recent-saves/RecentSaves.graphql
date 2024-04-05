@@ -20,7 +20,6 @@ query RecentSaves($pagination: PaginationInput) {
                 url
               }
               title
-              timeToRead
               resolvedUrl
               givenUrl
               excerpt

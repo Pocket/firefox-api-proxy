@@ -28,12 +28,9 @@ const fakerLocales = {
   it: 'it',
 };
 
-/**
- *
- * @param hasTimeToRead If true, timeToRead is set to [1, 9], otherwise it's undefined.
- */
-const fakeRecommendation = (hasTimeToRead = true): GraphRecommendation => {
-  const recommendationWithoutTimeToRead: GraphRecommendation = {
+
+const fakeRecommendation = (): GraphRecommendation => {
+  const recommendation: GraphRecommendation = {
     __typename: 'CorpusRecommendation',
     id: faker.datatype.uuid(),
     tileId: faker.datatype.number(),
@@ -46,7 +43,7 @@ const fakeRecommendation = (hasTimeToRead = true): GraphRecommendation => {
     },
   };
 
-  return recommendationWithoutTimeToRead;
+  return recommendation;
 };
 
 const fakeRecommendations = (
@@ -55,8 +52,7 @@ const fakeRecommendations = (
   return Array(count)
     .fill(0)
     .map((value, index) =>
-      // Add timeToRead only for even numbered recommendations.
-      fakeRecommendation(index % 2 === 0)
+      fakeRecommendation()
     );
 };
 
