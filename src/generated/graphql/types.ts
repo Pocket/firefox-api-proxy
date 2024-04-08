@@ -272,6 +272,8 @@ export type CorpusItem = {
   __typename?: 'CorpusItem';
   /** The author names and sort orders associated with this CorpusItem. */
   authors: Array<CorpusItemAuthor>;
+  /** The publication date for this story. */
+  datePublished?: Maybe<Scalars['Date']>;
   /** The excerpt of the Approved Item. */
   excerpt: Scalars['String'];
   /** The GUID that is stored on an approved corpus item */
@@ -665,6 +667,8 @@ export type Item = {
   hasVideo?: Maybe<Videoness>;
   /** Keyword highlights from search */
   highlights?: Maybe<ItemHighlights>;
+  /** A server generated unique id for this item based on itemId */
+  id: Scalars['ID'];
   /** Array of images within an article */
   images?: Maybe<Array<Maybe<Image>>>;
   /**
@@ -684,6 +688,8 @@ export type Item = {
   itemId: Scalars['String'];
   /** The detected language of the article */
   language?: Maybe<Scalars['String']>;
+  /** Estimated time to listen to the article, in seconds */
+  listenDuration?: Maybe<Scalars['Int']>;
   /**
    * Indicates if the url requires a login
    * @deprecated Clients should not use this
@@ -916,6 +922,8 @@ export type Mutation = {
    * Mutation is atomic -- if there is a response, all operations were successful.
    */
   batchWriteHighlights: BatchWriteHighlightsResult;
+  /** Remove all tags associated to a SavedItem (included for v3 proxy). */
+  clearTags?: Maybe<SavedItem>;
   /** Add a batch of items to an existing shareable list. */
   createAndAddToShareableList?: Maybe<ShareableList>;
   /** Create new highlight note. Returns the data for the created Highlight note. */
@@ -959,6 +967,11 @@ export type Mutation = {
    * (removes the Tag from all SavedItems). Returns ID of the deleted Tag.
    */
   deleteTag: Scalars['ID'];
+  /**
+   * Delete a tag entity identified by name (rather than ID), to support v3 proxy.
+   * Disassociates this tag from all SavedItems.
+   */
+  deleteTagByName?: Maybe<Scalars['String']>;
   /** Deletes user information and their pocket data for the given pocket userId. Returns pocket userId. */
   deleteUser: Scalars['ID'];
   /**
@@ -979,8 +992,20 @@ export type Mutation = {
    * Note: requires `transfersub` to be set in the header.
    */
   migrateAppleUser: Scalars['ID'];
+  /**
+   * 'Re-add' a SavedItem by id. Unarchives and undeletes the SavedItem
+   * as applicable, and refreshes the "createdAt" timestamp.
+   */
+  reAddById?: Maybe<SavedItem>;
   /** Refresh an Item's article content. */
   refreshItemArticle: Item;
+  /**
+   * Removes specific tags associated to a SavedItem,
+   * referenced by name, to support v3 proxy.
+   */
+  removeTagsByName?: Maybe<SavedItem>;
+  /** Rename a tag identified by name (rather than ID), to support v3 proxy. */
+  renameTagByName?: Maybe<Tag>;
   /**
    * Replaces the old tags associated with the savedItem to the new tag list
    * given in the entry
@@ -991,6 +1016,8 @@ export type Mutation = {
    * @deprecated use saveBatchUpdateTags
    */
   replaceSavedItemTags: Array<SavedItem>;
+  /** Replace specific tags associated to a SavedItem, to support v3 proxy. */
+  replaceTags?: Maybe<SavedItem>;
   /** Archives PocketSaves */
   saveArchive?: Maybe<SaveWriteMutationPayload>;
   /**
@@ -1145,6 +1172,13 @@ export type MutationBatchWriteHighlightsArgs = {
 
 
 /** Default Mutation Type */
+export type MutationClearTagsArgs = {
+  savedItem: SavedItemRef;
+  timestamp?: InputMaybe<Scalars['ISOString']>;
+};
+
+
+/** Default Mutation Type */
 export type MutationCreateAndAddToShareableListArgs = {
   itemData: Array<AddItemInput>;
   listData: CreateShareableListInput;
@@ -1167,6 +1201,7 @@ export type MutationCreateSavedItemHighlightsArgs = {
 /** Default Mutation Type */
 export type MutationCreateSavedItemTagsArgs = {
   input: Array<SavedItemTagsInput>;
+  timestamp?: InputMaybe<Scalars['ISOString']>;
 };
 
 
@@ -1186,6 +1221,7 @@ export type MutationCreateShareableListItemArgs = {
 /** Default Mutation Type */
 export type MutationDeleteSavedItemArgs = {
   id: Scalars['ID'];
+  timestamp?: InputMaybe<Scalars['ISOString']>;
 };
 
 
@@ -1226,6 +1262,13 @@ export type MutationDeleteTagArgs = {
 
 
 /** Default Mutation Type */
+export type MutationDeleteTagByNameArgs = {
+  tagName: Scalars['String'];
+  timestamp?: InputMaybe<Scalars['ISOString']>;
+};
+
+
+/** Default Mutation Type */
 export type MutationDeleteUserByFxaIdArgs = {
   id: Scalars['ID'];
 };
@@ -1246,14 +1289,46 @@ export type MutationMigrateAppleUserArgs = {
 
 
 /** Default Mutation Type */
+export type MutationReAddByIdArgs = {
+  id: Scalars['ID'];
+  timestamp: Scalars['ISOString'];
+};
+
+
+/** Default Mutation Type */
 export type MutationRefreshItemArticleArgs = {
   url: Scalars['String'];
 };
 
 
 /** Default Mutation Type */
+export type MutationRemoveTagsByNameArgs = {
+  savedItem: SavedItemRef;
+  tagNames: Array<Scalars['String']>;
+  timestamp?: InputMaybe<Scalars['ISOString']>;
+};
+
+
+/** Default Mutation Type */
+export type MutationRenameTagByNameArgs = {
+  newName: Scalars['String'];
+  oldName: Scalars['String'];
+  timestamp?: InputMaybe<Scalars['ISOString']>;
+};
+
+
+/** Default Mutation Type */
 export type MutationReplaceSavedItemTagsArgs = {
   input: Array<SavedItemTagsInput>;
+  timestamp?: InputMaybe<Scalars['ISOString']>;
+};
+
+
+/** Default Mutation Type */
+export type MutationReplaceTagsArgs = {
+  savedItem: SavedItemRef;
+  tagNames: Array<Scalars['String']>;
+  timestamp?: InputMaybe<Scalars['ISOString']>;
 };
 
 
@@ -1366,12 +1441,14 @@ export type MutationUpdateHighlightArgs = {
 /** Default Mutation Type */
 export type MutationUpdateSavedItemArchiveArgs = {
   id: Scalars['ID'];
+  timestamp?: InputMaybe<Scalars['ISOString']>;
 };
 
 
 /** Default Mutation Type */
 export type MutationUpdateSavedItemFavoriteArgs = {
   id: Scalars['ID'];
+  timestamp?: InputMaybe<Scalars['ISOString']>;
 };
 
 
@@ -1392,6 +1469,7 @@ export type MutationUpdateSavedItemHighlightNoteArgs = {
 /** Default Mutation Type */
 export type MutationUpdateSavedItemRemoveTagsArgs = {
   savedItemId?: InputMaybe<Scalars['ID']>;
+  timestamp?: InputMaybe<Scalars['ISOString']>;
 };
 
 
@@ -1412,18 +1490,21 @@ export type MutationUpdateSavedItemTitleArgs = {
 /** Default Mutation Type */
 export type MutationUpdateSavedItemUnArchiveArgs = {
   id: Scalars['ID'];
+  timestamp?: InputMaybe<Scalars['ISOString']>;
 };
 
 
 /** Default Mutation Type */
 export type MutationUpdateSavedItemUnDeleteArgs = {
   id: Scalars['ID'];
+  timestamp?: InputMaybe<Scalars['ISOString']>;
 };
 
 
 /** Default Mutation Type */
 export type MutationUpdateSavedItemUnFavoriteArgs = {
   id: Scalars['ID'];
+  timestamp?: InputMaybe<Scalars['ISOString']>;
 };
 
 
@@ -1495,9 +1576,9 @@ export type NumberedListElement = ListElement & {
 
 /** Input for offset-pagination (internal backend use only). */
 export type OffsetPaginationInput = {
-  /**  Defaults to 30  */
+  /** Defaults to 30 */
   limit?: InputMaybe<Scalars['Int']>;
-  /**  Defaults to 0  */
+  /** Defaults to 0 */
   offset?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1970,8 +2051,6 @@ export type RecommendationReason = {
 
 /** Reasons why recommendations are made. Focuses on client needs and is not exhaustive. */
 export enum RecommendationReasonType {
-  /** Recommendations based on hybrid collaborative filtering. */
-  HybridCfRecommender = 'HYBRID_CF_RECOMMENDER',
   /** Recommendations are sourced from the Pocket Hits newsletter. */
   PocketHits = 'POCKET_HITS',
   /** Recommendations that match the user's topic preferences are ranked higher. */
@@ -2140,6 +2219,17 @@ export type SavedItemEdge = {
 /** All types in this union should implement BaseError, for client fallback */
 export type SavedItemMutationError = NotFound | SyncConflict;
 
+/**
+ * We don't have official oneOf support, but this will
+ * throw if both `id` and `url` are unset/null.
+ * Don't provide both... but if both are provided, it will
+ * default to using ID.
+ */
+export type SavedItemRef = {
+  id?: InputMaybe<Scalars['ID']>;
+  url?: InputMaybe<Scalars['Url']>;
+};
+
 export type SavedItemSearchResult = {
   __typename?: 'SavedItemSearchResult';
   savedItem: SavedItem;
@@ -2168,6 +2258,15 @@ export type SavedItemSearchResultEdge = {
   cursor: Scalars['String'];
   /** The item at the end of the edge. */
   node: SavedItemSearchResult;
+};
+
+/** A page of SavedItemSearchResult, retrieved by offset-based pagination. */
+export type SavedItemSearchResultPage = {
+  __typename?: 'SavedItemSearchResultPage';
+  entries: Array<SavedItemSearchResult>;
+  limit: Scalars['Int'];
+  offset: Scalars['Int'];
+  totalCount: Scalars['Int'];
 };
 
 export enum SavedItemStatus {
@@ -2244,6 +2343,8 @@ export enum SavedItemsContentType {
   Article = 'ARTICLE',
   /** Item is a parsed article that contains videos */
   HasVideo = 'HAS_VIDEO',
+  /** Item is a video or a parsed article that contains videos */
+  HasVideoInclusive = 'HAS_VIDEO_INCLUSIVE',
   /** Item is an un-parsable page and will be opened externally */
   IsExternal = 'IS_EXTERNAL',
   /** Item is an image */
@@ -2996,6 +3097,7 @@ export type User = {
   /** Timestamp of the date when account was created */
   accountCreationDate?: Maybe<Scalars['ISOString']>;
   advancedSearch?: Maybe<SavedItemSearchResultConnection>;
+  advancedSearchByOffset?: Maybe<SavedItemSearchResultPage>;
   /** The public avatar url for the user */
   avatarUrl?: Maybe<Scalars['String']>;
   /** A users bio for their profile */
@@ -3032,6 +3134,7 @@ export type User = {
   search: SearchResult;
   /** Get a paginated list of user items that match a given term */
   searchSavedItems?: Maybe<SavedItemSearchResultConnection>;
+  searchSavedItemsByOffset?: Maybe<SavedItemSearchResultPage>;
   /** Get a paginated listing of all a user's Tags */
   tags?: Maybe<TagConnection>;
   /** The public username for the user */
@@ -3043,6 +3146,15 @@ export type User = {
 export type UserAdvancedSearchArgs = {
   filter?: InputMaybe<AdvancedSearchFilters>;
   pagination?: InputMaybe<PaginationInput>;
+  queryString?: InputMaybe<Scalars['String']>;
+  sort?: InputMaybe<SearchSortInput>;
+};
+
+
+/** Resolve by reference the User entity in this graph to provide user data with public lists. */
+export type UserAdvancedSearchByOffsetArgs = {
+  filter?: InputMaybe<AdvancedSearchFilters>;
+  pagination?: InputMaybe<OffsetPaginationInput>;
   queryString?: InputMaybe<Scalars['String']>;
   sort?: InputMaybe<SearchSortInput>;
 };
@@ -3086,6 +3198,15 @@ export type UserSearchArgs = {
 export type UserSearchSavedItemsArgs = {
   filter?: InputMaybe<SearchFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
+  sort?: InputMaybe<SearchSortInput>;
+  term: Scalars['String'];
+};
+
+
+/** Resolve by reference the User entity in this graph to provide user data with public lists. */
+export type UserSearchSavedItemsByOffsetArgs = {
+  filter?: InputMaybe<SearchFilterInput>;
+  pagination?: InputMaybe<OffsetPaginationInput>;
   sort?: InputMaybe<SearchSortInput>;
   term: Scalars['String'];
 };
@@ -3154,7 +3275,7 @@ export type RecentSavesQueryVariables = Exact<{
 }>;
 
 
-export type RecentSavesQuery = { __typename?: 'Query', user?: { __typename?: 'User', savedItems?: { __typename?: 'SavedItemConnection', edges?: Array<{ __typename?: 'SavedItemEdge', cursor: string, node?: { __typename?: 'SavedItem', id: string, status?: SavedItemStatus | null, url: string, item: { __typename: 'Item', wordCount?: number | null, title?: string | null, timeToRead?: number | null, resolvedUrl?: any | null, givenUrl: any, excerpt?: string | null, domain?: string | null, topImage?: { __typename?: 'Image', url: any } | null } | { __typename: 'PendingItem' } } | null } | null> | null } | null } | null };
+export type RecentSavesQuery = { __typename?: 'Query', user?: { __typename?: 'User', savedItems?: { __typename?: 'SavedItemConnection', edges?: Array<{ __typename?: 'SavedItemEdge', cursor: string, node?: { __typename?: 'SavedItem', id: string, status?: SavedItemStatus | null, url: string, item: { __typename: 'Item', wordCount?: number | null, title?: string | null, resolvedUrl?: any | null, givenUrl: any, excerpt?: string | null, domain?: string | null, topImage?: { __typename?: 'Image', url: any } | null } | { __typename: 'PendingItem' } } | null } | null> | null } | null } | null };
 
 export type NewTabRecommendationsQueryVariables = Exact<{
   locale: Scalars['String'];
@@ -3166,5 +3287,5 @@ export type NewTabRecommendationsQueryVariables = Exact<{
 export type NewTabRecommendationsQuery = { __typename?: 'Query', newTabSlate: { __typename?: 'CorpusSlate', utmSource?: string | null, recommendations: Array<{ __typename?: 'CorpusRecommendation', id: string, tileId: number, corpusItem: { __typename?: 'CorpusItem', excerpt: string, imageUrl: any, publisher: string, title: string, url: any } }> } };
 
 
-export const RecentSavesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"RecentSaves"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"savedItems"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"statuses"},"value":{"kind":"ListValue","values":[{"kind":"EnumValue","value":"UNREAD"}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"sort"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"sortBy"},"value":{"kind":"EnumValue","value":"CREATED_AT"}},{"kind":"ObjectField","name":{"kind":"Name","value":"sortOrder"},"value":{"kind":"EnumValue","value":"DESC"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"item"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Item"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordCount"}},{"kind":"Field","name":{"kind":"Name","value":"topImage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}}]}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"timeToRead"}},{"kind":"Field","name":{"kind":"Name","value":"resolvedUrl"}},{"kind":"Field","name":{"kind":"Name","value":"givenUrl"}},{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"domain"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<RecentSavesQuery, RecentSavesQueryVariables>;
+export const RecentSavesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"RecentSaves"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"savedItems"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"statuses"},"value":{"kind":"ListValue","values":[{"kind":"EnumValue","value":"UNREAD"}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"sort"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"sortBy"},"value":{"kind":"EnumValue","value":"CREATED_AT"}},{"kind":"ObjectField","name":{"kind":"Name","value":"sortOrder"},"value":{"kind":"EnumValue","value":"DESC"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"item"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Item"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordCount"}},{"kind":"Field","name":{"kind":"Name","value":"topImage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}}]}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"resolvedUrl"}},{"kind":"Field","name":{"kind":"Name","value":"givenUrl"}},{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"domain"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<RecentSavesQuery, RecentSavesQueryVariables>;
 export const NewTabRecommendationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NewTabRecommendations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locale"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"region"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"count"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"newTabSlate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}},{"kind":"Argument","name":{"kind":"Name","value":"region"},"value":{"kind":"Variable","name":{"kind":"Name","value":"region"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"utmSource"}},{"kind":"Field","name":{"kind":"Name","value":"recommendations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"count"},"value":{"kind":"Variable","name":{"kind":"Name","value":"count"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"tileId"}},{"kind":"Field","name":{"kind":"Name","value":"corpusItem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"excerpt"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"publisher"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]}}]}}]} as unknown as DocumentNode<NewTabRecommendationsQuery, NewTabRecommendationsQueryVariables>;

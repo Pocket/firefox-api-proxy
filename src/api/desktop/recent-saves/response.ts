@@ -35,7 +35,6 @@ const reduceGraphItem = (savedItem: GraphSavedItem): Save => {
     excerpt: nestedItem.excerpt,
     domain: nestedItem.domain,
     wordCount: nestedItem.wordCount,
-    timeToRead: nestedItem.timeToRead,
     topImageUrl: nestedItem?.topImage?.url ?? null,
   };
 };

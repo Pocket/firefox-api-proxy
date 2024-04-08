@@ -43,8 +43,6 @@ describe('response', () => {
             `utm_source=${graphResponse.newTabSlate.utmSource}`
           )
         ).toBeTruthy();
-        expect(res.data[0].timeToRead).toBeUndefined();
-        expect(res.data[1].timeToRead).toBeUndefined();
       } else {
         throw validate.errors;
       }
