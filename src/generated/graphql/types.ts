@@ -796,8 +796,25 @@ export type ItemHighlights = {
   url?: Maybe<Array<Maybe<Scalars['String']>>>;
 };
 
+export type ItemNotFound = {
+  __typename?: 'ItemNotFound';
+  message?: Maybe<Scalars['String']>;
+};
+
 /** Union type for items that may or may not be processed */
 export type ItemResult = Item | PendingItem;
+
+export type ItemSummary = {
+  __typename?: 'ItemSummary';
+  authors?: Maybe<Array<Author>>;
+  datePublished?: Maybe<Scalars['ISOString']>;
+  domain?: Maybe<DomainMetadata>;
+  excerpt?: Maybe<Scalars['String']>;
+  image?: Maybe<Image>;
+  item?: Maybe<Item>;
+  title?: Maybe<Scalars['String']>;
+  url: Scalars['Url'];
+};
 
 /** A label used to mark and categorize an Entity (e.g. Collection). */
 export type Label = {
@@ -1709,6 +1726,31 @@ export enum PocketSaveStatus {
   Unread = 'UNREAD'
 }
 
+export enum PremiumFeature {
+  /** Feature where you get an ad-free experience */
+  AdFree = 'AD_FREE',
+  /** Feature where you can highlight articles */
+  Annotations = 'ANNOTATIONS',
+  /** Feature where pocket saves permanent copies of all your saves */
+  PermanentLibrary = 'PERMANENT_LIBRARY',
+  /** Feature where pocket's search is enhanced */
+  PremiumSearch = 'PREMIUM_SEARCH',
+  /** Feature where pocket suggests tags */
+  SuggestedTags = 'SUGGESTED_TAGS'
+}
+
+export enum PremiumStatus {
+  /**
+   * User has premium and its active
+   * NOTE: User will still show as active if they turn off auto-renew or have otherwise canceled but the expiration date hasn't hit yet
+   */
+  Active = 'ACTIVE',
+  /** User has had premium, but it is expired */
+  Expired = 'EXPIRED',
+  /** User has never had premium */
+  Never = 'NEVER'
+}
+
 /** The publisher that the curation team set for the syndicated article */
 export type Publisher = {
   __typename?: 'Publisher';
@@ -1811,6 +1853,14 @@ export type Query = {
   listTopics: Array<Topic>;
   /** Get a slate of ranked recommendations for the Firefox New Tab. Currently supports the Italy, France, and Spain markets. */
   newTabSlate: CorpusSlate;
+  /**
+   * Resolve Reader View links which might point to SavedItems that do not
+   * exist, aren't in the Pocket User's list, or are requested by a logged-out
+   * user (or user without a Pocket Account).
+   * Fetches data to create an interstitial page/modal so the visitor can click
+   * through to the shared site.
+   */
+  readerSlug: ReaderViewResult;
   /** List all topics that the user can express a preference for. */
   recommendationPreferenceTopics: Array<Topic>;
   scheduledSurface: ScheduledSurface;
@@ -1957,6 +2007,15 @@ export type QueryNewTabSlateArgs = {
  * Default root level query type. All authorization checks are done in these queries.
  * TODO: These belong in a seperate User Service that provides a User object (the user settings will probably exist there too)
  */
+export type QueryReaderSlugArgs = {
+  slug: Scalars['ID'];
+};
+
+
+/**
+ * Default root level query type. All authorization checks are done in these queries.
+ * TODO: These belong in a seperate User Service that provides a User object (the user settings will probably exist there too)
+ */
 export type QueryScheduledSurfaceArgs = {
   id: Scalars['ID'];
 };
@@ -2005,6 +2064,24 @@ export type QuerySyndicatedArticleBySlugArgs = {
  */
 export type QueryUnleashAssignmentsArgs = {
   context: UnleashContext;
+};
+
+export type ReaderFallback = ItemNotFound | ReaderInterstitial;
+
+export type ReaderInterstitial = {
+  __typename?: 'ReaderInterstitial';
+  itemCard?: Maybe<ItemSummary>;
+};
+
+export type ReaderViewResult = {
+  __typename?: 'ReaderViewResult';
+  fallbackPage?: Maybe<ReaderFallback>;
+  /**
+   * The SavedItem referenced by this reader view slug, if it
+   * is in the Pocket User's list.
+   */
+  savedItem?: Maybe<SavedItem>;
+  slug: Scalars['ID'];
 };
 
 export type RecItUserProfile = {
@@ -3106,6 +3183,8 @@ export type User = {
   email?: Maybe<Scalars['String']>;
   /** The users first name */
   firstName?: Maybe<Scalars['String']>;
+  /** User id, provided by the user service. */
+  id: Scalars['ID'];
   /** Indicates if a user is FxA or not */
   isFxa?: Maybe<Scalars['Boolean']>;
   /** The user's premium status */
@@ -3114,6 +3193,10 @@ export type User = {
   lastName?: Maybe<Scalars['String']>;
   /** The users first name and last name combined */
   name?: Maybe<Scalars['String']>;
+  /** Premium features that a user has access to */
+  premiumFeatures?: Maybe<Array<Maybe<PremiumFeature>>>;
+  /** Current premium status of the user */
+  premiumStatus?: Maybe<PremiumStatus>;
   /** Preferences for recommendations that the user has explicitly set. */
   recommendationPreferences?: Maybe<UserRecommendationPreferences>;
   /** Get a PocketSave(s) by its id(s) */
@@ -3137,6 +3220,18 @@ export type User = {
   searchSavedItemsByOffset?: Maybe<SavedItemSearchResultPage>;
   /** Get a paginated listing of all a user's Tags */
   tags?: Maybe<TagConnection>;
+  /**
+   * Get all tag names for a user.
+   * If syncSince is passed, it will only return tags if changes
+   * to a user's tags have occurred after syncSince. It will return
+   * all of the user's tags (not just the changes).
+   *
+   * Yes, this is bad graphql design. It's serving a specific
+   * REST API which has unlimited SQL queries, and we do not want to
+   * make it possible to request every associated SavedItem
+   * node on a tag object. Just biting the bullet on this one.
+   */
+  tagsList?: Maybe<Array<Scalars['String']>>;
   /** The public username for the user */
   username?: Maybe<Scalars['String']>;
 };
@@ -3215,6 +3310,12 @@ export type UserSearchSavedItemsByOffsetArgs = {
 /** Resolve by reference the User entity in this graph to provide user data with public lists. */
 export type UserTagsArgs = {
   pagination?: InputMaybe<PaginationInput>;
+};
+
+
+/** Resolve by reference the User entity in this graph to provide user data with public lists. */
+export type UserTagsListArgs = {
+  syncSince?: InputMaybe<Scalars['ISOString']>;
 };
 
 export type UserRecommendationPreferences = {
