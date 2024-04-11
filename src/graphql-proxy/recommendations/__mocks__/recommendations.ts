@@ -28,7 +28,6 @@ const fakerLocales = {
   it: 'it',
 };
 
-
 const fakeRecommendation = (): GraphRecommendation => {
   const recommendation: GraphRecommendation = {
     __typename: 'CorpusRecommendation',
@@ -51,9 +50,7 @@ const fakeRecommendations = (
 ): NewTabRecommendationsQuery['newTabSlate']['recommendations'] => {
   return Array(count)
     .fill(0)
-    .map((value, index) =>
-      fakeRecommendation()
-    );
+    .map((value, index) => fakeRecommendation());
 };
 
 const recommendations = async (
