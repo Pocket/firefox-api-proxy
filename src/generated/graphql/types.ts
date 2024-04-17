@@ -713,6 +713,8 @@ export type Item = {
    * @deprecated Use a domain as the identifier instead
    */
   originDomainId?: Maybe<Scalars['String']>;
+  /** The client preview/display logic for this url */
+  preview?: Maybe<ItemSummary>;
   /** Recommend similar articles to show in the bottom of an article. */
   relatedAfterArticle: Array<CorpusRecommendation>;
   /** Recommend similar articles after saving. */
@@ -810,6 +812,7 @@ export type ItemSummary = {
   datePublished?: Maybe<Scalars['ISOString']>;
   domain?: Maybe<DomainMetadata>;
   excerpt?: Maybe<Scalars['String']>;
+  id: Scalars['ID'];
   image?: Maybe<Image>;
   item?: Maybe<Item>;
   title?: Maybe<Scalars['String']>;
@@ -1726,6 +1729,11 @@ export enum PocketSaveStatus {
   Unread = 'UNREAD'
 }
 
+export type PocketShare = {
+  __typename?: 'PocketShare';
+  id: Scalars['ID'];
+};
+
 export enum PremiumFeature {
   /** Feature where you get an ad-free experience */
   AdFree = 'AD_FREE',
@@ -2200,7 +2208,10 @@ export type SaveUpsertInput = {
   isFavorite?: InputMaybe<Scalars['Boolean']>;
   /** Optional, title of the SavedItem */
   title?: InputMaybe<Scalars['String']>;
-  /** The url to create/update the SavedItem with. (the url to save to the list) */
+  /**
+   * The url to create/update the SavedItem with. (the url to save to the list)
+   * Must be at least a 4 character string which is the shortest url
+   */
   url: Scalars['String'];
 };
 
@@ -2398,7 +2409,10 @@ export type SavedItemUpsertInput = {
   timestamp?: InputMaybe<Scalars['Int']>;
   /** Optional, title of the SavedItem */
   title?: InputMaybe<Scalars['String']>;
-  /** The url to create/update the SavedItem with. (the url to save to the list) */
+  /**
+   * The url to create/update the SavedItem with. (the url to save to the list)
+   * Must be at least a 4 character string which is the shortest url
+   */
   url: Scalars['String'];
 };
 
