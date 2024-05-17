@@ -177,6 +177,12 @@ describe('input.ts recommendations query parameters', () => {
     });
   });
 
+  it('sets enableRankingByRegion to false if no default is provided', () => {
+    const res = setDefaultsAndCoerceTypes({});
+    // validation should return an error in this case, validating defaults though
+    expect(res.enableRankingByRegion).toStrictEqual(false);
+  });
+
   describe('handleQueryParameters', () => {
     it('returns errors if invalid query parameters', () => {
       const params: RecommendationsQueryParameterStrings = {
@@ -198,6 +204,44 @@ describe('input.ts recommendations query parameters', () => {
       );
     });
 
+    it('returns enableRankingByRegion as true when set to 1', () => {
+      const params: RecommendationsQueryParameterStrings = {
+        count: faker.datatype.number({ min: 1, max: 30 }).toString(),
+        locale: 'fr',
+        region: 'FR',
+        enableRankingByRegion: '1',
+      };
+
+      const variables = handleQueryParameters(params);
+      expect(variables).toStrictEqual(
+        expect.objectContaining<NewTabRecommendationsQueryVariables>({
+          count: parseInt(params.count, 10),
+          locale: params.locale,
+          region: params.region,
+          enableRankingByRegion: true,
+        })
+      );
+    });
+
+    it('returns enableRankingByRegion as false when set to 0', () => {
+      const params: RecommendationsQueryParameterStrings = {
+        count: faker.datatype.number({ min: 1, max: 30 }).toString(),
+        locale: 'fr',
+        region: 'FR',
+        enableRankingByRegion: '0',
+      };
+
+      const variables = handleQueryParameters(params);
+      expect(variables).toStrictEqual(
+        expect.objectContaining<NewTabRecommendationsQueryVariables>({
+          count: parseInt(params.count, 10),
+          locale: params.locale,
+          region: params.region,
+          enableRankingByRegion: false,
+        })
+      );
+    });
+
     it('returns GraphQL query variables on success', () => {
       const params: RecommendationsQueryParameterStrings = {
         count: faker.datatype.number({ min: 1, max: 30 }).toString(),
@@ -211,6 +255,7 @@ describe('input.ts recommendations query parameters', () => {
           count: parseInt(params.count, 10),
           locale: params.locale,
           region: params.region,
+          enableRankingByRegion: false,
         })
       );
     });

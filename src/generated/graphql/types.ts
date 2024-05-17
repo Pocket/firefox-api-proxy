@@ -3635,6 +3635,7 @@ export type NewTabRecommendationsQueryVariables = Exact<{
   locale: Scalars['String'];
   region?: InputMaybe<Scalars['String']>;
   count?: InputMaybe<Scalars['Int']>;
+  enableRankingByRegion?: InputMaybe<Scalars['Boolean']>;
 }>;
 
 

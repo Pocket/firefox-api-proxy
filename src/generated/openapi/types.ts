@@ -166,6 +166,8 @@ export interface operations {
         locale: "fr" | "fr-FR" | "es" | "es-ES" | "it" | "it-IT" | "en" | "en-CA" | "en-GB" | "en-US" | "de" | "de-DE" | "de-AT" | "de-CH";
         /** @description This region string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive. See [Firefox Home & New Tab Regional Differences](https://mozilla-hub.atlassian.net/wiki/spaces/FPS/pages/80448805/Regional+Differences). */
         region?: string;
+        /** @description Returns recommendations specific to the region if set to 1. */
+        enableRankingByRegion?: 0 | 1;
       };
     };
     responses: {
