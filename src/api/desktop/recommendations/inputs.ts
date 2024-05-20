@@ -25,10 +25,10 @@ export type RecommendationsQueryParameterStrings = Partial<
  * This type captures that uncertainty.
  */
 type PreValidatedQueryParameters = {
+  enableRankingByRegion?: boolean;
   count: number;
   locale?: string;
   region?: string;
-  enableRankingByRegion?: boolean;
 };
 
 // validator responses include everything needed to build an error response

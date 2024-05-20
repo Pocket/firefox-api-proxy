@@ -1,5 +1,5 @@
-query NewTabRecommendations($locale: String!, $region: String, $count: Int) {
-  newTabSlate(locale: $locale, region: $region) {
+query NewTabRecommendations($locale: String!, $region: String, $count: Int, $enableRankingByRegion: Boolean) {
+  newTabSlate(locale: $locale, region: $region, enableRankingByRegion: $enableRankingByRegion) {
     utmSource
     recommendations(count: $count) {
       id
