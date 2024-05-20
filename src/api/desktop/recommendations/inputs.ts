@@ -25,6 +25,7 @@ export type RecommendationsQueryParameterStrings = Partial<
  * This type captures that uncertainty.
  */
 type PreValidatedQueryParameters = {
+  enableRankingByRegion?: boolean;
   count: number;
   locale?: string;
   region?: string;
@@ -120,6 +121,7 @@ export const setDefaultsAndCoerceTypes = (
   return {
     ...withDefaults,
     count: parseInt(withDefaults.count, 10),
+    enableRankingByRegion: withDefaults.enableRankingByRegion == '1',
   };
 };
 
@@ -132,7 +134,7 @@ export const setDefaultsAndCoerceTypes = (
  */
 export const validate = (
   query: PreValidatedQueryParameters
-): BFFFxErrorInstanceType | RecommendationsQueryParameters => {
+): BFFFxErrorInstanceType | PreValidatedQueryParameters => {
   // errorDetails is empty if all fields are valid
   const errorDetails = [
     isValidCount(query.count),
@@ -160,7 +162,7 @@ export const validate = (
     return error;
   }
 
-  return query as RecommendationsQueryParameters;
+  return query as PreValidatedQueryParameters;
 };
 
 /**

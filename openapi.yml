@@ -309,6 +309,13 @@ paths:
           description: This region string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive. See [Firefox Home & New Tab Regional Differences](https://mozilla-hub.atlassian.net/wiki/spaces/FPS/pages/80448805/Regional+Differences).
           schema:
             type: string
+        - name: enableRankingByRegion
+          in: query
+          required: false
+          description: Returns recommendations specific to the region if set to 1.
+          schema:
+            type: integer
+            enum: [0, 1]
       responses:
         '200':
           description: OK
