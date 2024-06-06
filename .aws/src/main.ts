@@ -151,7 +151,6 @@ class Stack extends TerraformStack {
       internal: false,
       prefix: config.prefix,
       alb6CharacterPrefix: config.shortName,
-      tags: config.tags,
       cdn: false,
       domain: config.domain,
       containerConfigs: [
@@ -376,7 +375,6 @@ class Stack extends TerraformStack {
         name: `/Backend/${config.prefix}/ecs/${containerName}`,
         retentionInDays: 90,
         skipDestroy: true,
-        tags: config.tags,
       }
     );
 
