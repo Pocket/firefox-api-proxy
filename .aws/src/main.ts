@@ -30,7 +30,10 @@ class Stack extends TerraformStack {
   constructor(scope: Construct, name: string) {
     super(scope, name);
 
-    new AwsProvider(this, 'aws', { region: 'us-east-1' });
+    new AwsProvider(this, 'aws', {
+      region: 'us-east-1',
+      defaultTags: [{ tags: config.tags }],
+    });
     new PagerdutyProvider(this, 'pagerduty_provider', { token: undefined });
     new LocalProvider(this, 'local_provider');
     new NullProvider(this, 'null_provider');
@@ -148,7 +151,6 @@ class Stack extends TerraformStack {
       internal: false,
       prefix: config.prefix,
       alb6CharacterPrefix: config.shortName,
-      tags: config.tags,
       cdn: false,
       domain: config.domain,
       containerConfigs: [
@@ -373,7 +375,6 @@ class Stack extends TerraformStack {
         name: `/Backend/${config.prefix}/ecs/${containerName}`,
         retentionInDays: 90,
         skipDestroy: true,
-        tags: config.tags,
       }
     );
 
