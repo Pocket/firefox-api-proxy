@@ -44,5 +44,8 @@ export const config = {
   tags: {
     service: name,
     environment,
+    app_code: 'content',
+    component_code: `content-${name.toLowerCase()}`,
+    env_code: isDev ? 'dev' : 'prod',
   },
 };
