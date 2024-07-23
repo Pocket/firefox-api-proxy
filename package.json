@@ -5,7 +5,7 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "rm -rf dist && tsc",
-    "codegen": "npm run codegen:graphql-types",
+    "codegen": "npm run codegen:graphql-types && npm run codegen:openapi-types",
     "codegen:graphql-types": "graphql-codegen",
     "codegen:openapi-types": "openapi-typescript ./openapi.yml -o ./src/generated/openapi/types.ts",
     "docs": "redocly preview-docs openapi.yml",
