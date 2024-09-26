@@ -40,8 +40,14 @@ export const setDefaultsAndCoerceTypes = (
     ...stringParams,
   };
 
+  let count = parseInt(withDefaults.count, 10);
+  if (count > 20) {
+    // versions of Firefox are asking for 88 items, so we'll allow up to 20
+    count = 20;
+  }
+
   return {
-    count: parseInt(withDefaults.count, 10),
+    count: count,
   };
 };
 
