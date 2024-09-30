@@ -154,7 +154,7 @@ export type CachedImageInput = {
   fileType?: InputMaybe<ImageFileType>;
   /** Height of the image */
   height?: InputMaybe<Scalars['Int']>;
-  /** Id of the image in the returned result set */
+  /** ID that will be added to the generated response object so you can find it. NOTE: Can be any string that you like, it will be added to the response so you can use it when consuming it */
   id: Scalars['ID'];
   /** Quality of the image in whole percentage, 100 = full, quality 50 = half quality */
   qualityPercentage?: InputMaybe<Scalars['Int']>;
@@ -183,6 +183,8 @@ export type Collection = {
    */
   language: CollectionLanguage;
   partnership?: Maybe<CollectionPartnership>;
+  /** The preview of the collection */
+  preview: PocketMetadata;
   publishedAt?: Maybe<Scalars['DateString']>;
   /**
    * Provides short url for the given_url in the format: https://pocket.co/<identifier>.
@@ -301,8 +303,12 @@ export type CorpusItem = {
   image: Image;
   /** The image URL for this item's accompanying picture. */
   imageUrl: Scalars['Url'];
+  /** Experimental data point that could imply either an expiry date or an urgency to be shown. */
+  isTimeSensitive: Scalars['Boolean'];
   /** What language this item is in. This is a two-letter code, for example, 'EN' for English. */
   language: CorpusLanguage;
+  /** The preview of the search result */
+  preview: PocketMetadata;
   /** The name of the online publication that published this story. */
   publisher: Scalars['String'];
   /** The user's saved item, from the Corpus Item, if the corpus item was saved to the user's saves */
@@ -451,8 +457,8 @@ export type CorpusSearchHighlights = {
 /** A node in a CorpusSearchConnection result */
 export type CorpusSearchNode = {
   __typename?: 'CorpusSearchNode';
-  /** The preview of the search result */
-  preview: PocketMetadata;
+  /** Attaches the item so we can use the preview field */
+  item?: Maybe<Item>;
   /** Search highlights */
   searchHighlights?: Maybe<CorpusSearchHighlights>;
 };
@@ -469,7 +475,11 @@ export type CorpusSearchQueryString = {
   query: Scalars['String'];
 };
 
-/** Sort scheme for Corpus Search. Defaults to showing most relevant results first. */
+/**
+ * Sort scheme for Corpus Search. Defaults to showing most relevant results first.
+ * Only relevant for indices which use keyword search.
+ * **Semantic search will ignore any inputs and use default only.**
+ */
 export type CorpusSearchSort = {
   sortBy: CorpusSearchSortBy;
   sortOrder?: InputMaybe<SearchItemsSortOrder>;
@@ -828,6 +838,8 @@ export type Item = {
    * @deprecated Clients should not use this
    */
   contentLength?: Maybe<Scalars['Int']>;
+  /** If the item is in corpus allow the item to reference it.  Exposing curated info for consistent UX */
+  corpusItem?: Maybe<CorpusItem>;
   /** The date the article was published */
   datePublished?: Maybe<Scalars['DateString']>;
   /** The date the parser resolved this item */
@@ -904,7 +916,7 @@ export type Item = {
    * @deprecated Use a domain as the identifier instead
    */
   originDomainId?: Maybe<Scalars['String']>;
-  /** The client preview/display logic for this url */
+  /** The client preview/display logic for this url. The requires for each object should be kept in sync with the sub objects requires field. */
   preview?: Maybe<PocketMetadata>;
   /** A server generated unique reader slug for this item based on itemId */
   readerSlug: Scalars['String'];
@@ -1961,9 +1973,12 @@ export type PocketMetadata = {
 };
 
 export enum PocketMetadataSource {
+  Collection = 'COLLECTION',
+  CuratedCorpus = 'CURATED_CORPUS',
   Oembed = 'OEMBED',
   Opengraph = 'OPENGRAPH',
-  PocketParser = 'POCKET_PARSER'
+  PocketParser = 'POCKET_PARSER',
+  Syndication = 'SYNDICATION'
 }
 
 /**
@@ -2165,7 +2180,12 @@ export type Query = {
   /** List all topics that the user can express a preference for. */
   recommendationPreferenceTopics: Array<Topic>;
   scheduledSurface: ScheduledSurface;
-  /** Search Pocket's corpus of recommendations and collections. */
+  /**
+   * Search Pocket's corpus of recommendations and collections.
+   * Note that sort will have no effect unless using keyword
+   * semantic search will always be returned in relevance order
+   * (most relevant first).
+   */
   searchCorpus?: Maybe<CorpusSearchConnection>;
   /**
    * Resolve data for a Shared link, or return a Not Found
@@ -2622,7 +2642,7 @@ export type SavedItem = RemoteEntity & {
   tags?: Maybe<Array<Tag>>;
   /** The title for user saved item. Set by the user and if not, set by the parser. */
   title?: Maybe<Scalars['String']>;
-  /** The url the user saved to their list */
+  /** key field to identify the SavedItem entity in the ListApi service */
   url: Scalars['String'];
 };
 
@@ -3303,12 +3323,20 @@ export type SyndicatedArticle = {
   localeLanguage?: Maybe<Scalars['String']>;
   /** Primary image to use in surfacing this content */
   mainImage?: Maybe<Scalars['String']>;
+  /**
+   * The Item entity representing the original content this was
+   * syndicated from.
+   */
+  originalItem: Item;
   /** The item id of the article we cloned */
   originalItemId: Scalars['ID'];
+  /** The preview of the syndicated article */
+  preview: PocketMetadata;
   /** AWSDateTime — Format: YYYY-MM-DDThh:mm:ss.sssZ */
   publishedAt: Scalars['String'];
   /** The manually set publisher information for this article */
   publisher?: Maybe<Publisher>;
+  /** The canonical publisher URL. Automatically set at time of creation but can be changed by editor. */
   publisherUrl: Scalars['String'];
   /** Recommend similar syndicated articles. */
   relatedEndOfArticle: Array<CorpusRecommendation>;
@@ -3438,7 +3466,7 @@ export type Topic = {
   displayName: Scalars['String'];
   /** If returned a note to show to the user about the topic */
   displayNote?: Maybe<Scalars['String']>;
-  /** The id of the topic */
+  /** The legacy UUID id of the topic */
   id: Scalars['ID'];
   /** Whether or not clients should show this topic ot users */
   isDisplayed: Scalars['Boolean'];
