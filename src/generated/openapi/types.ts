@@ -4,32 +4,35 @@
  */
 
 
+/** Type helpers */
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
+type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U;
+type OneOf<T extends any[]> = T extends [infer Only] ? Only : T extends [infer A, infer B, ...infer Rest] ? OneOf<[XOR<A, B>, ...Rest]> : never;
+
 export interface paths {
   "/desktop/v1/recommendations": {
     /**
-     * Gets a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth.
+     * Gets a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth. 
      * @description Supports Fx desktop version 114 and up.
      */
     get: operations["getRecommendations"];
   };
   "/v3/firefox/global-recs": {
     /**
-     * Used by older versions of Firefox to get a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth.
-     * @deprecated
+     * Used by older versions of Firefox to get a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth. 
+     * @deprecated 
      * @description Supports Fx desktop version 115 and below.
      */
     get: operations["getGlobalRecs"];
   };
   "/desktop/v1/recent-saves": {
     /**
-     * Gets a list of the most recent saves for a specific user.
+     * Gets a list of the most recent saves for a specific user. 
      * @description Supports Fx desktop version 113 and up.
      */
     get: operations["getRecentSaves"];
   };
 }
-
-export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
@@ -52,11 +55,11 @@ export interface components {
     };
     ErrorResponse: {
       /** @description An array of error objects */
-      errors: components["schemas"]["Error"][];
+      errors: (components["schemas"]["Error"])[];
     };
     Save: {
       /**
-       * @description Constant identifier for Saves, allowing them to be differentiated when multiple types are returned together.
+       * @description Constant identifier for Saves, allowing them to be differentiated when multiple types are returned together. 
        * @enum {string}
        */
       __typename: "Save";
@@ -81,7 +84,7 @@ export interface components {
     };
     PendingSave: {
       /**
-       * @description Constant identifier for PendingSave, allowing them to be differentiated when multiple types are returned together.
+       * @description Constant identifier for PendingSave, allowing them to be differentiated when multiple types are returned together. 
        * @enum {string}
        */
       __typename: "PendingSave";
@@ -93,14 +96,14 @@ export interface components {
     /** @description These items contain similar content to saves, but have been through a curation process and have more guaranteed data. */
     Recommendation: {
       /**
-       * @description Constant identifier for Recommendation type objects.
+       * @description Constant identifier for Recommendation type objects. 
        * @enum {string}
        */
       __typename: "Recommendation";
       /** @description String identifier for the Recommendation. This value is expected to be different on each request. */
       recommendationId?: string;
       /**
-       * @deprecated
+       * @deprecated 
        * @description Numerical identifier for the Recommendation. This is specifically a number for Fx client and Mozilla data pipeline compatibility. This property will continue to be present because Firefox clients depend on it, but downstream users should use the recommendation id instead when available.
        */
       tileId: number;
@@ -130,12 +133,12 @@ export interface components {
     LegacySettings: {
       spocsPerNewTabs?: number;
       domainAffinityParameterSets?: Record<string, never>;
-      timeSegments?: {
+      timeSegments?: ({
           id: string;
           startTime: number;
           endTime: number;
           weightPosition: number;
-        }[];
+        })[];
       recsExpireTime?: number;
       version?: string;
     };
@@ -147,26 +150,24 @@ export interface components {
   pathItems: never;
 }
 
-export type $defs = Record<string, never>;
-
 export type external = Record<string, never>;
 
 export interface operations {
 
-  /**
-   * Gets a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth.
-   * @description Supports Fx desktop version 114 and up.
-   */
   getRecommendations: {
+    /**
+     * Gets a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth. 
+     * @description Supports Fx desktop version 114 and up.
+     */
     parameters: {
-      query: {
         /** @description The number of items to return. */
-        count?: number;
         /** @description This locale string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive. */
-        locale: "fr" | "fr-FR" | "es" | "es-ES" | "it" | "it-IT" | "en" | "en-CA" | "en-GB" | "en-US" | "de" | "de-DE" | "de-AT" | "de-CH";
         /** @description This region string is Fx domain language, and built from Fx expectations. Parameter values are not case sensitive. See [Firefox Home & New Tab Regional Differences](https://mozilla-hub.atlassian.net/wiki/spaces/FPS/pages/80448805/Regional+Differences). */
-        region?: string;
         /** @description Returns recommendations specific to the region if set to 1. */
+      query: {
+        count?: number;
+        locale: "fr" | "fr-FR" | "es" | "es-ES" | "it" | "it-IT" | "en" | "en-CA" | "en-GB" | "en-US" | "de" | "de-DE" | "de-AT" | "de-CH";
+        region?: string;
         enableRankingByRegion?: 0 | 1;
       };
     };
@@ -175,7 +176,7 @@ export interface operations {
       200: {
         content: {
           "application/json": {
-            data: components["schemas"]["Recommendation"][];
+            data: (components["schemas"]["Recommendation"])[];
           };
         };
       };
@@ -186,9 +187,7 @@ export interface operations {
         };
       };
       /** @description This proxy service encountered an unexpected error. */
-      500: {
-        content: never;
-      };
+      500: never;
       /** @description Services downstream from this proxy encountered an unexpected error. */
       502: {
         content: {
@@ -203,21 +202,21 @@ export interface operations {
       };
     };
   };
-  /**
-   * Used by older versions of Firefox to get a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth.
-   * @deprecated
-   * @description Supports Fx desktop version 115 and below.
-   */
   getGlobalRecs: {
+    /**
+     * Used by older versions of Firefox to get a list of Recommendations for a Locale and Region. This operation is performed anonymously and requires no auth. 
+     * @deprecated 
+     * @description Supports Fx desktop version 115 and below.
+     */
     parameters: {
-      query: {
         /** @description API version */
-        version: number;
         /** @description Firefox locale */
-        locale_lang: string;
         /** @description Firefox region */
-        region?: string;
         /** @description Maximum number of items to return */
+      query: {
+        version: number;
+        locale_lang: string;
+        region?: string;
         count?: number;
       };
     };
@@ -228,9 +227,9 @@ export interface operations {
           "application/json": {
             /** @enum {integer} */
             status: 1;
-            spocs: unknown[];
+            spocs: (unknown)[];
             settings: components["schemas"]["LegacySettings"];
-            recommendations: components["schemas"]["LegacyFeedItem"][];
+            recommendations: (components["schemas"]["LegacyFeedItem"])[];
           };
         };
       };
@@ -241,9 +240,7 @@ export interface operations {
         };
       };
       /** @description This proxy service encountered an unexpected error. */
-      500: {
-        content: never;
-      };
+      500: never;
       /** @description Services downstream from this proxy encountered an unexpected error. */
       502: {
         content: {
@@ -258,14 +255,14 @@ export interface operations {
       };
     };
   };
-  /**
-   * Gets a list of the most recent saves for a specific user.
-   * @description Supports Fx desktop version 113 and up.
-   */
   getRecentSaves: {
-    parameters: {
-      query?: {
+    /**
+     * Gets a list of the most recent saves for a specific user. 
+     * @description Supports Fx desktop version 113 and up.
+     */
+    parameters?: {
         /** @description The number of items to return. */
+      query?: {
         count?: number;
       };
     };
@@ -291,9 +288,7 @@ export interface operations {
         };
       };
       /** @description This proxy service encountered an unexpected error. */
-      500: {
-        content: never;
-      };
+      500: never;
       /** @description Services downstream from this proxy encountered an unexpected error. */
       502: {
         content: {
