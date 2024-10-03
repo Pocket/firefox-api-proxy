@@ -58,7 +58,7 @@
     "@pocket-tools/eslint-config": "2.0.0",
     "@pocket-tools/tsconfig": "2.0.1",
     "@redocly/cli": "^1.0.0-beta.112",
-    "@types/chai": "4.3.1",
+    "@types/chai": "4.3.20",
     "@types/cookie-parser": "^1.4.3",
     "@types/express": "^4.17.14",
     "@types/jest": "29.5.12",
