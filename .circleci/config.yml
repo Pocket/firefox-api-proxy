@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  pocket: pocket/circleci-orbs@dev:bf0dcd245370cde09b67f4e95db444e28798a8e1
+  pocket: pocket/circleci-orbs@2.3.0
   backstage-entity-validator: roadiehq/backstage-entity-validator@0.4.2
 
 # Workflow shortcuts
