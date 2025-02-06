@@ -18,9 +18,7 @@ import { config } from './config';
 import {
   PocketALBApplication,
   PocketECSCodePipeline,
-  PocketPagerDuty,
 } from '@pocket-tools/terraform-modules';
-import { PagerdutyProvider } from '@cdktf/provider-pagerduty/lib/provider';
 import { LocalProvider } from '@cdktf/provider-local/lib/provider';
 import { NullProvider } from '@cdktf/provider-null/lib/provider';
 import { CloudwatchLogGroup } from '@cdktf/provider-aws/lib/cloudwatch-log-group';
@@ -34,7 +32,6 @@ class Stack extends TerraformStack {
       region: 'us-east-1',
       defaultTags: [{ tags: config.tags }],
     });
-    new PagerdutyProvider(this, 'pagerduty_provider', { token: undefined });
     new LocalProvider(this, 'local_provider');
     new NullProvider(this, 'null_provider');
 
@@ -49,7 +46,6 @@ class Stack extends TerraformStack {
     const caller = new DataAwsCallerIdentity(this, 'caller');
 
     const pocketApp = this.createPocketAlbApplication({
-      pagerDuty: this.createPagerDuty(),
       secretsManagerKmsAlias: this.getSecretsManagerKmsAlias(),
       snsTopic: this.getCodeDeploySnsTopic(),
       wafAcl: this.createWafAcl(),
@@ -96,42 +92,7 @@ class Stack extends TerraformStack {
     });
   }
 
-  /**
-   * Create PagerDuty service for alerts
-   * @private
-   */
-  private createPagerDuty() {
-    // don't create any pagerduty resources if in dev
-    if (config.isDev) {
-      return undefined;
-    }
-
-    const incidentManagement = new DataTerraformRemoteState(
-      this,
-      'incident_management',
-      {
-        organization: 'Pocket',
-        workspaces: {
-          name: 'incident-management',
-        },
-      }
-    );
-
-    return new PocketPagerDuty(this, 'pagerduty', {
-      prefix: config.prefix,
-      service: {
-        criticalEscalationPolicyId: incidentManagement
-          .get('policy_default_critical_id')
-          .toString(),
-        nonCriticalEscalationPolicyId: incidentManagement
-          .get('policy_default_non_critical_id')
-          .toString(),
-      },
-    });
-  }
-
   private createPocketAlbApplication(dependencies: {
-    pagerDuty: PocketPagerDuty;
     region: DataAwsRegion;
     caller: DataAwsCallerIdentity;
     secretsManagerKmsAlias: DataAwsKmsAlias;
@@ -139,7 +100,6 @@ class Stack extends TerraformStack {
     wafAcl: Wafv2WebAcl;
   }): PocketALBApplication {
     const {
-      //  pagerDuty, // enable if necessary
       region,
       caller,
       secretsManagerKmsAlias,
