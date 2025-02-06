@@ -24,10 +24,19 @@ export type Scalars = {
   Markdown: any;
   Max300CharString: any;
   NonNegativeInt: any;
+  ProseMirrorJson: any;
   Timestamp: any;
   Url: any;
   ValidUrl: any;
 };
+
+/** The source of en entity */
+export enum ActivitySource {
+  /** Manually entered through the curation admin tool */
+  Manual = 'MANUAL',
+  /** Created by ML */
+  Ml = 'ML'
+}
 
 /**
  * Input data for adding multiple items to a list.
@@ -64,6 +73,20 @@ export enum ApprovedItemGrade {
   C = 'C'
 }
 
+export type ArchiveNoteInput = {
+  /**
+   * The ID of the note to archive or unarchive
+   * (depends on mutation).
+   */
+  id: Scalars['ID'];
+  /**
+   * When the note was archived or unarchived.
+   * If not provided, defaults to the server time upon
+   * receiving request.
+   */
+  updatedAt?: InputMaybe<Scalars['ISOString']>;
+};
+
 export type ArticleMarkdown = {
   __typename?: 'ArticleMarkdown';
   images?: Maybe<Array<MarkdownImagePosition>>;
@@ -95,6 +118,15 @@ export type Author = {
 export type BaseError = {
   message: Scalars['String'];
   path: Scalars['String'];
+};
+
+/** Input for batch imports */
+export type BatchImportInput = {
+  createdAt: Scalars['ISOString'];
+  status?: InputMaybe<ImportableStatus>;
+  tags?: InputMaybe<Array<Scalars['String']>>;
+  title: Scalars['String'];
+  url: Scalars['Url'];
 };
 
 /** Input object for creating and deleting highlights using bulk mutation. */
@@ -608,6 +640,49 @@ export type CreateHighlightInput = {
   version: Scalars['Int'];
 };
 
+/** Input to create a new Note */
+export type CreateNoteInput = {
+  /**
+   * When this note was created. If not provided, defaults to server time upon
+   * receiving request.
+   */
+  createdAt?: InputMaybe<Scalars['ISOString']>;
+  /** JSON representation of a ProseMirror document */
+  docContent: Scalars['ProseMirrorJson'];
+  /**
+   * Client-provided UUID for the new Note.
+   * If not provided, will be generated on the server.
+   */
+  id?: InputMaybe<Scalars['ID']>;
+  /** Optional URL to link this Note to. */
+  source?: InputMaybe<Scalars['ValidUrl']>;
+  /** Optional title for this Note */
+  title?: InputMaybe<Scalars['String']>;
+};
+
+/**
+ * Input to create a new Note with markdown-formatted
+ * content string.
+ */
+export type CreateNoteMarkdownInput = {
+  /**
+   * When this note was created. If not provided, defaults to server time upon
+   * receiving request.
+   */
+  createdAt?: InputMaybe<Scalars['ISOString']>;
+  /** The document content in Commonmark Markdown. */
+  docMarkdown: Scalars['Markdown'];
+  /**
+   * Client-provided UUID for the new Note.
+   * If not provided, will be generated on the server.
+   */
+  id?: InputMaybe<Scalars['ID']>;
+  /** Optional URL to link this Note to. */
+  source?: InputMaybe<Scalars['ValidUrl']>;
+  /** Optional title for this Note */
+  title?: InputMaybe<Scalars['String']>;
+};
+
 /** Input data for creating a Shareable List. */
 export type CreateShareableListInput = {
   description?: InputMaybe<Scalars['String']>;
@@ -671,6 +746,16 @@ export type DateFilter = {
   before?: InputMaybe<Scalars['ISOString']>;
 };
 
+export type DeleteNoteInput = {
+  /**
+   * When the note was deleted was made. If not provided, defaults to
+   * the server time upon receiving request.
+   */
+  deletedAt?: InputMaybe<Scalars['ISOString']>;
+  /** The ID of the note to delete */
+  id: Scalars['ID'];
+};
+
 export type DeleteSavedItemTagsInput = {
   /** The id of the SavedItem from which to delete a Tag association */
   savedItemId: Scalars['ID'];
@@ -687,6 +772,44 @@ export type DomainMetadata = {
   logoGreyscale?: Maybe<Scalars['Url']>;
   /** The name of the domain (e.g., The New York Times) */
   name?: Maybe<Scalars['String']>;
+};
+
+/** Input for editing the content of a Note (user-generated) */
+export type EditNoteContentInput = {
+  /** JSON representation of a ProseMirror document */
+  docContent: Scalars['ProseMirrorJson'];
+  /** The ID of the note to edit */
+  noteId: Scalars['ID'];
+  /** The time this update was made (defaults to server time) */
+  updatedAt?: InputMaybe<Scalars['ISOString']>;
+};
+
+/**
+ * Input for editing the content of a Note (user-generated),
+ * providing the content as a Markdown-formatted string.
+ */
+export type EditNoteContentMarkdownInput = {
+  /** Commonmark Markdown string representing the document content. */
+  docMarkdown: Scalars['Markdown'];
+  /** The ID of the note to edit */
+  noteId: Scalars['ID'];
+  /** The time this update was made (defaults to server time) */
+  updatedAt?: InputMaybe<Scalars['ISOString']>;
+};
+
+export type EditNoteTitleInput = {
+  /** The ID of the note to edit */
+  id: Scalars['ID'];
+  /**
+   * The new title for the note. If null, sets the title
+   * field to null (deletes it).
+   */
+  title?: InputMaybe<Scalars['String']>;
+  /**
+   * When the update was made. If not provided, defaults to the server
+   * time upon receiving request.
+   */
+  updatedAt?: InputMaybe<Scalars['ISOString']>;
 };
 
 /** The reason a user web session is being expired. */
@@ -812,6 +935,24 @@ export enum Imageness {
   IsImage = 'IS_IMAGE',
   /** No images (v3 value is 0) */
   NoImages = 'NO_IMAGES'
+}
+
+export type ImportLimited = {
+  __typename?: 'ImportLimited';
+  message: Scalars['String'];
+  refreshInHours: Scalars['Int'];
+};
+
+/** Services we support file upload imports from. */
+export enum ImportType {
+  Omnivore = 'omnivore'
+}
+
+export type ImportUploadResponse = ImportLimited | PreSignedUrl;
+
+export enum ImportableStatus {
+  Archived = 'ARCHIVED',
+  Unread = 'UNREAD'
 }
 
 /**
@@ -1158,6 +1299,13 @@ export type Mutation = {
   /** Add a batch of items to an existing shareable list. */
   addToShareableList: ShareableList;
   /**
+   * Archive a note.
+   * If the Note does not exist or is inaccessible for the current user,
+   * response will be null and a NOT_FOUND error will be included in the
+   * errors array.
+   */
+  archiveNote?: Maybe<Note>;
+  /**
    * Make requests to create and delete highlights in a single batch.
    * Mutation is atomic -- if there is a response, all operations were successful.
    */
@@ -1168,6 +1316,10 @@ export type Mutation = {
   createAndAddToShareableList?: Maybe<ShareableList>;
   /** Create new highlight annotation(s). Returns the data for the created Highlight object. */
   createHighlightByUrl: Highlight;
+  /** Create a new note, optionally with title and content */
+  createNote: Note;
+  /** Create a new note, optionally with title and markdown content */
+  createNoteMarkdown: Note;
   /** Create new highlight note. Returns the data for the created Highlight note. */
   createSavedItemHighlightNote?: Maybe<HighlightNote>;
   /** Create new highlight annotation(s). Returns the data for the created Highlight object(s). */
@@ -1190,6 +1342,12 @@ export type Mutation = {
   createShareableList?: Maybe<ShareableList>;
   /** Creates a Shareable List Item. */
   createShareableListItem?: Maybe<ShareableListItem>;
+  /**
+   * Delete a note and all attachments. Returns True if the note was successfully
+   * deleted. If the note cannot be deleted or does not exist, returns False.
+   * Errors will be included in the errors array if applicable.
+   */
+  deleteNote: Scalars['ID'];
   /**
    * Deletes a SavedItem from the users list. Returns ID of the
    * deleted SavedItem
@@ -1227,11 +1385,43 @@ export type Mutation = {
    */
   deleteUserByFxaId: Scalars['ID'];
   /**
+   * Edit the content of a Note.
+   * If the Note does not exist or is inaccessible for the current user,
+   * response will be null and a NOT_FOUND error will be included in the
+   * errors array.
+   */
+  editNoteContent?: Maybe<Note>;
+  /**
+   * Edit the content of a Note, providing a markdown document instead
+   * of a Prosemirror JSON.
+   * If the Note does not exist or is inaccessible for the current user,
+   * response will be null and a NOT_FOUND error will be included in the
+   * errors array.
+   */
+  editNoteContentMarkdown?: Maybe<Note>;
+  /**
+   * Edit the title of a Note.
+   * If the Note does not exist or is inaccessible for the current user,
+   * response will be null and a NOT_FOUND error will be included in the
+   * errors array.
+   */
+  editNoteTitle?: Maybe<Note>;
+  /**
    * Expires a user's web session tokens by firefox account ID.
    * Called by fxa-webhook proxy. Need to supply a reason why to expire user web session.
    * Returns the user ID.
    */
   expireUserWebSessionByFxaId: Scalars['ID'];
+  /**
+   * Request for an asynchronous export of a user's list.
+   * Returns the request ID associated with the request.
+   */
+  exportList?: Maybe<Scalars['String']>;
+  /**
+   * Get a presigned URL to upload an export from another service
+   * to S3, to be imported into Pocket.
+   */
+  importUploadUrl?: Maybe<ImportUploadResponse>;
   /**
    * temporary mutation for apple user migration.
    * called by fxa-webhook proxy to update the fxaId and email of the user.
@@ -1322,6 +1512,13 @@ export type Mutation = {
    * In the future this will be more permissive.
    */
   savedItemUpdateTitle?: Maybe<SavedItem>;
+  /**
+   * Unarchive a note.
+   * If the Note does not exist or is inaccessible for the current user,
+   * response will be null and a NOT_FOUND error will be included in the
+   * errors array.
+   */
+  unArchiveNote?: Maybe<Note>;
   /**
    * Update an existing highlight annotation, by its ID.
    * If the given highlight ID does not exist, will return error data
@@ -1425,6 +1622,12 @@ export type MutationAddToShareableListArgs = {
 
 
 /** Default Mutation Type */
+export type MutationArchiveNoteArgs = {
+  input: ArchiveNoteInput;
+};
+
+
+/** Default Mutation Type */
 export type MutationBatchWriteHighlightsArgs = {
   input?: InputMaybe<BatchWriteHighlightsInput>;
 };
@@ -1447,6 +1650,18 @@ export type MutationCreateAndAddToShareableListArgs = {
 /** Default Mutation Type */
 export type MutationCreateHighlightByUrlArgs = {
   input: CreateHighlightByUrlInput;
+};
+
+
+/** Default Mutation Type */
+export type MutationCreateNoteArgs = {
+  input: CreateNoteInput;
+};
+
+
+/** Default Mutation Type */
+export type MutationCreateNoteMarkdownArgs = {
+  input: CreateNoteMarkdownInput;
 };
 
 
@@ -1487,6 +1702,12 @@ export type MutationCreateShareableListArgs = {
 /** Default Mutation Type */
 export type MutationCreateShareableListItemArgs = {
   data: CreateShareableListItemInput;
+};
+
+
+/** Default Mutation Type */
+export type MutationDeleteNoteArgs = {
+  input: DeleteNoteInput;
 };
 
 
@@ -1547,9 +1768,33 @@ export type MutationDeleteUserByFxaIdArgs = {
 
 
 /** Default Mutation Type */
+export type MutationEditNoteContentArgs = {
+  input: EditNoteContentInput;
+};
+
+
+/** Default Mutation Type */
+export type MutationEditNoteContentMarkdownArgs = {
+  input: EditNoteContentMarkdownInput;
+};
+
+
+/** Default Mutation Type */
+export type MutationEditNoteTitleArgs = {
+  input: EditNoteTitleInput;
+};
+
+
+/** Default Mutation Type */
 export type MutationExpireUserWebSessionByFxaIdArgs = {
   id: Scalars['ID'];
   reason: ExpireUserWebSessionReason;
+};
+
+
+/** Default Mutation Type */
+export type MutationImportUploadUrlArgs = {
+  importType: ImportType;
 };
 
 
@@ -1710,6 +1955,12 @@ export type MutationSavedItemUpdateTitleArgs = {
 
 
 /** Default Mutation Type */
+export type MutationUnArchiveNoteArgs = {
+  input: ArchiveNoteInput;
+};
+
+
+/** Default Mutation Type */
 export type MutationUpdateHighlightArgs = {
   id: Scalars['ID'];
   input: UpdateHighlightInput;
@@ -1841,6 +2092,112 @@ export type NotFound = BaseError & {
   path: Scalars['String'];
   value?: Maybe<Scalars['String']>;
 };
+
+/**
+ * A Note is an entity which may contain extracted components
+ * from websites (clippings/snippets), user-generated rich text content,
+ * and may be linked to a source url.
+ */
+export type Note = {
+  __typename?: 'Note';
+  /** Whether this Note has been marked as archived (hide from default view). */
+  archived: Scalars['Boolean'];
+  /** Markdown preview of the note content for summary view. */
+  contentPreview?: Maybe<Scalars['Markdown']>;
+  /** When this note was created */
+  createdAt: Scalars['ISOString'];
+  /**
+   * Whether this Note has been marked for deletion (will be eventually
+   * removed from the server). Clients should delete Notes from their local
+   * storage if this value is true.
+   */
+  deleted: Scalars['Boolean'];
+  /**
+   * JSON representation of a ProseMirror document
+   * (compatible with Markdown)
+   */
+  docContent?: Maybe<Scalars['ProseMirrorJson']>;
+  /** Markdown representation of the note content */
+  docMarkdown?: Maybe<Scalars['Markdown']>;
+  /** This Note's identifier */
+  id: Scalars['ID'];
+  /**
+   * The SavedItem entity this note is attached to (either directly
+   * or via a Clipping, if applicable)
+   */
+  savedItem?: Maybe<SavedItem>;
+  /**
+   * The URL this entity was created from (either directly or via
+   * a Clipping, if applicable).
+   */
+  source?: Maybe<Scalars['ValidUrl']>;
+  /** Title of this note */
+  title?: Maybe<Scalars['String']>;
+  /** When this note was last updated */
+  updatedAt: Scalars['ISOString'];
+};
+
+/** The connection type for Note. */
+export type NoteConnection = {
+  __typename?: 'NoteConnection';
+  /** A list of edges. */
+  edges?: Maybe<Array<Maybe<NoteEdge>>>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** Identifies the total count of Notes in the connection. */
+  totalCount: Scalars['Int'];
+};
+
+/** An edge in a connection. */
+export type NoteEdge = {
+  __typename?: 'NoteEdge';
+  /** A cursor for use in pagination. */
+  cursor: Scalars['String'];
+  /** The Note at the end of the edge. */
+  node?: Maybe<Note>;
+};
+
+/** Filter for retrieving Notes */
+export type NoteFilterInput = {
+  /**
+   * Filter to retrieve Notes by archived status (true/false).
+   * If not provided, notes will not be filtered by archived status.
+   */
+  archived?: InputMaybe<Scalars['Boolean']>;
+  /**
+   * Filter to choose whether to include notes marked for server-side
+   * deletion in the response (defaults to false).
+   */
+  excludeDeleted?: InputMaybe<Scalars['Boolean']>;
+  /**
+   * Filter to show notes which are attached to a source URL
+   * directly or via clipping, or are standalone
+   * notes. If not provided, notes will not be filtered by source url.
+   */
+  isAttachedToSave?: InputMaybe<Scalars['Boolean']>;
+  /** Filter to retrieve notes after a timestamp, e.g. for syncing. */
+  since?: InputMaybe<Scalars['ISOString']>;
+};
+
+/** Enum to specify the sort by field (these are the current options, we could add more in the future) */
+export enum NoteSortBy {
+  CreatedAt = 'CREATED_AT',
+  UpdatedAt = 'UPDATED_AT'
+}
+
+/** Input to sort fetched Notes. If unspecified, defaults to UPDATED_AT, DESC. */
+export type NoteSortInput = {
+  /** The field by which to sort Notes */
+  sortBy: NoteSortBy;
+  /** The order in which to sort Notes */
+  sortOrder: NoteSortOrder;
+};
+
+/** Possible values for sort ordering (ascending/descending) */
+export enum NoteSortOrder {
+  Asc = 'ASC',
+  Desc = 'DESC'
+}
 
 export type NumberedListElement = ListElement & {
   __typename?: 'NumberedListElement';
@@ -2042,6 +2399,15 @@ export type PocketShare = {
   targetUrl: Scalars['ValidUrl'];
 };
 
+/** A presigned URL for uploading to S3 */
+export type PreSignedUrl = {
+  __typename?: 'PreSignedUrl';
+  /** Time until expiry in seconds after grant */
+  ttl: Scalars['Int'];
+  /** The presigned URL */
+  url: Scalars['Url'];
+};
+
 export enum PremiumFeature {
   /** Feature where you get an ad-free experience */
   AdFree = 'AD_FREE',
@@ -2131,6 +2497,8 @@ export type Query = {
    * @deprecated Use itemByUrl instead
    */
   getItemByUrl?: Maybe<Item>;
+  /** Retrieves a list of active Sections with their corresponding active SectionItems for a scheduled surface. */
+  getSections: Array<Section>;
   /**
    * Request a specific `Slate` by id
    * @deprecated Please use queries specific to the surface ex. setMomentSlate. If a named query for your surface does not yet exit please reach out to the Data Products team and they will happily provide you with a named query.
@@ -2169,6 +2537,10 @@ export type Query = {
   listTopics: Array<Topic>;
   /** Get a slate of ranked recommendations for the Firefox New Tab. Currently supports the Italy, France, and Spain markets. */
   newTabSlate: CorpusSlate;
+  /** Retrieve a specific Note */
+  note?: Maybe<Note>;
+  /** Retrieve a user's Notes */
+  notes?: Maybe<NoteConnection>;
   /**
    * Resolve Reader View links which might point to SavedItems that do not
    * exist, aren't in the Pocket User's list, or are requested by a logged-out
@@ -2268,6 +2640,15 @@ export type QueryGetItemByUrlArgs = {
  * Default root level query type. All authorization checks are done in these queries.
  * TODO: These belong in a seperate User Service that provides a User object (the user settings will probably exist there too)
  */
+export type QueryGetSectionsArgs = {
+  filters: SectionFilters;
+};
+
+
+/**
+ * Default root level query type. All authorization checks are done in these queries.
+ * TODO: These belong in a seperate User Service that provides a User object (the user settings will probably exist there too)
+ */
 export type QueryGetSlateArgs = {
   recommendationCount?: InputMaybe<Scalars['Int']>;
   slateId: Scalars['String'];
@@ -2329,6 +2710,26 @@ export type QueryNewTabSlateArgs = {
   enableRankingByRegion?: InputMaybe<Scalars['Boolean']>;
   locale: Scalars['String'];
   region?: InputMaybe<Scalars['String']>;
+};
+
+
+/**
+ * Default root level query type. All authorization checks are done in these queries.
+ * TODO: These belong in a seperate User Service that provides a User object (the user settings will probably exist there too)
+ */
+export type QueryNoteArgs = {
+  id: Scalars['ID'];
+};
+
+
+/**
+ * Default root level query type. All authorization checks are done in these queries.
+ * TODO: These belong in a seperate User Service that provides a User object (the user settings will probably exist there too)
+ */
+export type QueryNotesArgs = {
+  filter?: InputMaybe<NoteFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+  sort?: InputMaybe<NoteSortInput>;
 };
 
 
@@ -2634,6 +3035,11 @@ export type SavedItem = RemoteEntity & {
   isFavorite: Scalars['Boolean'];
   /** Link to the underlying Pocket Item for the URL */
   item: ItemResult;
+  /**
+   * The notes associated with this SavedItem, optionally
+   * filtered to retrieve after a 'since' parameter.
+   */
+  notes: NoteConnection;
   /** The status of this SavedItem */
   status?: Maybe<SavedItemStatus>;
   /** The Suggested Tags associated with this SavedItem, if the user is not premium or there are none, this will be empty. */
@@ -2644,6 +3050,17 @@ export type SavedItem = RemoteEntity & {
   title?: Maybe<Scalars['String']>;
   /** key field to identify the SavedItem entity in the ListApi service */
   url: Scalars['String'];
+};
+
+
+/**
+ * Represents a Pocket Item that a user has saved to their list.
+ * (Said otherways, indicates a saved url to a users list and associated user specific information.)
+ */
+export type SavedItemNotesArgs = {
+  filter?: InputMaybe<SavedItemNoteFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+  sort?: InputMaybe<NoteSortInput>;
 };
 
 /**
@@ -2686,6 +3103,22 @@ export type SavedItemEdge = {
 
 /** All types in this union should implement BaseError, for client fallback */
 export type SavedItemMutationError = NotFound | SyncConflict;
+
+/** Filter for retrieving Notes attached to a SavedItem */
+export type SavedItemNoteFilterInput = {
+  /**
+   * Filter to retrieve Notes by archived status (true/false).
+   * If not provided, notes will not be filtered by archived status.
+   */
+  archived?: InputMaybe<Scalars['Boolean']>;
+  /**
+   * Filter to choose whether to include notes marked for server-side
+   * deletion in the response (defaults to false).
+   */
+  excludeDeleted?: InputMaybe<Scalars['Boolean']>;
+  /** Filter to retrieve notes after a timestamp, e.g. for syncing. */
+  since?: InputMaybe<Scalars['ISOString']>;
+};
 
 /**
  * We don't have official oneOf support, but this will
@@ -3079,6 +3512,49 @@ export enum SearchStatus {
   Archived = 'ARCHIVED',
   Queued = 'QUEUED'
 }
+
+/** An entity containing Corpus Items. */
+export type Section = {
+  __typename?: 'Section';
+  /** Indicates whether or not a Section is available for display. */
+  active: Scalars['Boolean'];
+  /** The source which created the Section. */
+  createSource: ActivitySource;
+  /** An alternative primary key in UUID format. */
+  externalId: Scalars['ID'];
+  /** The GUID of the Scheduled Surface. Example: 'NEW_TAB_EN_US'. */
+  scheduledSurfaceGuid: Scalars['ID'];
+  /**
+   * An array of active and in-active SectionItems in a Section.
+   * This field returns an empty array when creating a new Section or updating a Section.
+   */
+  sectionItems: Array<SectionItem>;
+  /** Controls the display order of Sections. */
+  sort?: Maybe<Scalars['Int']>;
+  /** The title of the Section displayed to the users. */
+  title: Scalars['String'];
+};
+
+/** Available fields for filtering Sections. */
+export type SectionFilters = {
+  /** Required filter to retrieve Sections & SectionItems for a Scheduled Surface */
+  scheduledSurfaceGuid: Scalars['ID'];
+};
+
+/** A CorpusItem belonging to a Section */
+export type SectionItem = {
+  __typename?: 'SectionItem';
+  /** The associated Corpus Item. */
+  corpusItem: CorpusItem;
+  /** An alternative primary key in UUID format that is generated on creation. */
+  externalId: Scalars['ID'];
+  /**
+   * The initial rank of the SectionItem in relation to its siblings. Used as a
+   * fallback in Merino when there is no engagement/click data available. May only apply to
+   * ML-generated SectionItems.
+   */
+  rank?: Maybe<Scalars['Int']>;
+};
 
 export type ShareContext = {
   __typename?: 'ShareContext';
@@ -3799,6 +4275,8 @@ export type Video = {
 export enum VideoType {
   /** Brightcove (v3 value is 8) */
   Brightcove = 'BRIGHTCOVE',
+  /** Dailymotion (v3 value is 9) */
+  Dailymotion = 'DAILYMOTION',
   /** Flash (v3 value is 6) */
   Flash = 'FLASH',
   /** html5 (v3 value is 5) */
