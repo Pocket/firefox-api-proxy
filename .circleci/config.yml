@@ -47,7 +47,7 @@ only_dev: &only_dev
 jobs:
   build:
     docker:
-      - image: cimg/node:18.20
+      - image: cimg/node:18.20.6@sha256:80fe29f21323ac40999ccca38339d942488a71fec343fad231340be6fbdf865b
     steps:
       - checkout
       # Define the working directory for this job
@@ -89,7 +89,7 @@ jobs:
     description: Run integration tests against external services, e.g. Snowplow
     docker:
       # The application
-      - image: cimg/node:18.20
+      - image: cimg/node:18.20.6@sha256:80fe29f21323ac40999ccca38339d942488a71fec343fad231340be6fbdf865b
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
@@ -127,7 +127,7 @@ jobs:
   test_specs:
     description: Run spec tests
     docker:
-      - image: cimg/node:18.20
+      - image: cimg/node:18.20.6@sha256:80fe29f21323ac40999ccca38339d942488a71fec343fad231340be6fbdf865b
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
