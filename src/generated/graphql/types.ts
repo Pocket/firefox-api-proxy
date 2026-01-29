@@ -66,13 +66,6 @@ export type AdvancedSearchFilters = {
   title?: InputMaybe<Scalars['String']>;
 };
 
-/** Valid grade values for CorpusItem (public graph) and ApprovedItem (admin graph) */
-export enum ApprovedItemGrade {
-  A = 'A',
-  B = 'B',
-  C = 'C'
-}
-
 export type ArchiveNoteInput = {
   /**
    * The ID of the note to archive or unarchive
@@ -327,8 +320,6 @@ export type CorpusItem = {
   datePublished?: Maybe<Scalars['Date']>;
   /** The excerpt of the Approved Item. */
   excerpt: Scalars['String'];
-  /** The quality grade associated with this CorpusItem. */
-  grade?: Maybe<ApprovedItemGrade>;
   /** The GUID that is stored on an approved corpus item */
   id: Scalars['ID'];
   /** The image for this item's accompanying picture. */
@@ -820,6 +811,18 @@ export enum ExpireUserWebSessionReason {
   PasswordChanged = 'PASSWORD_CHANGED'
 }
 
+export type ExportAcknowledgment = {
+  __typename?: 'ExportAcknowledgment';
+  requestId: Scalars['String'];
+};
+
+export type ExportDisabled = {
+  __typename?: 'ExportDisabled';
+  message: Scalars['String'];
+};
+
+export type ExportResponse = ExportAcknowledgment | ExportDisabled;
+
 /** Input field to boost the score of an elasticsearch document based on a specific field and value */
 export type FunctionalBoostField = {
   /** A float number to boost the score by */
@@ -879,6 +882,16 @@ export type IabCategory = {
   externalId: Scalars['String'];
   name: Scalars['String'];
   slug: Scalars['String'];
+};
+
+/**
+ * Represents IAB metadata for a Section.
+ * Used by both admin input/output and public output.
+ */
+export type IabMetadata = {
+  __typename?: 'IABMetadata';
+  categories: Array<Scalars['String']>;
+  taxonomy: Scalars['String'];
 };
 
 export type IabParentCategory = {
@@ -1413,8 +1426,15 @@ export type Mutation = {
    */
   expireUserWebSessionByFxaId: Scalars['ID'];
   /**
+   * Request data for export. Returns an acknowledgment with the
+   * request ID, or an error message (if the export service is
+   * temporarily disabled for maintenance)
+   */
+  exportData?: Maybe<ExportResponse>;
+  /**
    * Request for an asynchronous export of a user's list.
    * Returns the request ID associated with the request.
+   * @deprecated use exportData
    */
   exportList?: Maybe<Scalars['String']>;
   /**
@@ -2497,7 +2517,7 @@ export type Query = {
    * @deprecated Use itemByUrl instead
    */
   getItemByUrl?: Maybe<Item>;
-  /** Retrieves a list of active Sections with their corresponding active SectionItems for a scheduled surface. */
+  /** Retrieves a list of active and enabled Sections with their corresponding active SectionItems for a scheduled surface. */
   getSections: Array<Section>;
   /**
    * Request a specific `Slate` by id
@@ -3520,8 +3540,19 @@ export type Section = {
   active: Scalars['Boolean'];
   /** The source which created the Section. */
   createSource: ActivitySource;
+  /** A short description of the Section. */
+  description?: Maybe<Scalars['String']>;
   /** An alternative primary key in UUID format. */
   externalId: Scalars['ID'];
+  /**
+   * An optional description or supporting text for use in hero modules.
+   * Relevant for custom sections.
+   */
+  heroDescription?: Maybe<Scalars['String']>;
+  /** An optional title used in hero modules. Relevant for custom sections. */
+  heroTitle?: Maybe<Scalars['String']>;
+  /** Optional IAB metadata returned to the client (i.e. Merino->Firefox, Admin Tools) */
+  iab?: Maybe<IabMetadata>;
   /** The GUID of the Scheduled Surface. Example: 'NEW_TAB_EN_US'. */
   scheduledSurfaceGuid: Scalars['ID'];
   /**
